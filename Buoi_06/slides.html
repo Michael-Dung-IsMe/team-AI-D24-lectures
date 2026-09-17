@@ -1,0 +1,2385 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buổi 06: Interface Programming &amp; API Integration — ProPTIT AI D24</title>
+
+    <!-- Reveal.js core -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <!-- Highlight.js theme (Monokai) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/monokai.min.css">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+    <!-- Fonts: Space Grotesk, Inter, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* DESIGN TOKENS — ProPTIT AI D24 */
+        :root {
+            --bg: #0B1023;
+            --bg-panel: #141B34;
+            --bg-panel-2: #182042;
+            --line: #2A3560;
+
+            --cyan: #00E5FF;
+            --amber: #FFB020;
+            --signal: #FF6D00;
+            --mint: #4ADE80;
+            --coral: #FB7185;
+
+            --text: #EAF0FF;
+            --text-muted: #8C97BF;
+
+            --font-head: "Space Grotesk", sans-serif;
+            --font-body: "Inter", sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+        }
+
+        /* BASE & VIEWPORT FULLSCREEN */
+        html,
+        body {
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        .reveal-viewport {
+            background-color: var(--bg) !important;
+            background-image: radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0);
+            background-size: 34px 34px;
+            background-position: -6px -6px;
+        }
+
+        .reveal {
+            font-family: var(--font-body);
+            color: var(--text);
+            background-color: transparent;
+        }
+
+        .reveal .slides {
+            text-align: left;
+        }
+
+        .reveal .slides section {
+            background: transparent;
+            padding: 36px 50px;
+            box-sizing: border-box;
+        }
+
+        .reveal h1,
+        .reveal h2,
+        .reveal h3 {
+            font-family: var(--font-head);
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text);
+        }
+
+        .reveal h1 {
+            font-size: 2.3em;
+        }
+
+        .reveal h2 {
+            font-size: 1.55em;
+            color: var(--cyan);
+            margin-bottom: 0.45em;
+        }
+
+        .reveal h3 {
+            font-size: 1.05em;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .reveal p,
+        .reveal li {
+            font-size: 0.82em;
+            line-height: 1.5;
+        }
+
+        .reveal ul,
+        .reveal ol {
+            display: block;
+        }
+
+        .reveal li {
+            margin-bottom: 0.35em;
+        }
+
+        .reveal a {
+            color: var(--cyan);
+        }
+
+        .reveal .progress {
+            color: var(--signal);
+            height: 4px;
+        }
+
+        .reveal .controls {
+            color: var(--cyan);
+        }
+
+        .reveal .slide-number {
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            background: transparent;
+        }
+
+        /* TITLE SLIDE */
+        .title-slide {
+            background-image:
+                radial-gradient(ellipse 900px 500px at 15% 20%, rgba(0, 229, 255, 0.16), transparent 60%),
+                radial-gradient(ellipse 700px 500px at 85% 80%, rgba(255, 109, 0, 0.12), transparent 60%),
+                radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0) !important;
+            background-size: auto, auto, 34px 34px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .title-slide .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.6em;
+            color: var(--cyan);
+            margin-bottom: 0.5em;
+        }
+
+        .title-slide .eyebrow::before {
+            content: "// ";
+            color: var(--text-muted);
+        }
+
+        .title-slide h1 {
+            font-size: 2.4em;
+            max-width: 14ch;
+            line-height: 1.2;
+            margin-bottom: 0.2em;
+        }
+
+        .title-slide .rule {
+            width: 64px;
+            height: 4px;
+            background: var(--signal);
+            margin: 0.6em 0 0.8em 0;
+            border: none;
+        }
+
+        .title-slide .presenter {
+            font-family: var(--font-mono);
+            font-size: 0.7em;
+            color: var(--text-muted);
+        }
+
+        /* SECTION DIVIDER */
+        .divider-slide {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .divider-slide .index {
+            font-family: var(--font-mono);
+            font-size: 4.8em;
+            color: var(--bg-panel-2);
+            -webkit-text-stroke: 2px var(--cyan);
+            color: transparent;
+            line-height: 1;
+        }
+
+        .divider-slide .divider-title h2 {
+            margin-bottom: 0.2em;
+        }
+
+        .divider-slide .divider-title p {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        /* TWO-COLUMN LAYOUT */
+        .two-col {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .two-col .col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .two-col.divided {
+            position: relative;
+        }
+
+        .two-col.divided::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--line);
+        }
+
+        /* OBJECTIVES LIST */
+        .objectives {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .objectives li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.9em;
+            margin-bottom: 0.5em;
+        }
+
+        .objectives li::before {
+            content: "✓";
+            color: var(--mint);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* TERMINAL / CODE PANEL */
+        .terminal {
+            background: var(--bg-panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .terminal .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            background: var(--bg-panel-2);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .terminal .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .terminal .dot.red {
+            background: var(--coral);
+        }
+
+        .terminal .dot.yellow {
+            background: var(--amber);
+        }
+
+        .terminal .dot.green {
+            background: var(--mint);
+        }
+
+        .terminal .terminal-label {
+            font-family: var(--font-mono);
+            font-size: 0.52em;
+            color: var(--text-muted);
+            margin-left: 6px;
+        }
+
+        .terminal pre {
+            margin: 0;
+            background: transparent !important;
+            box-shadow: none;
+            width: 100%;
+        }
+
+        .terminal pre code {
+            font-family: var(--font-mono);
+            font-size: 0.6em;
+            line-height: 1.45;
+            padding: 14px 16px !important;
+        }
+
+        .terminal .output {
+            font-family: var(--font-mono);
+            font-size: 0.58em;
+            color: var(--mint);
+            padding: 10px 14px;
+            border-top: 1px solid var(--line);
+            background: var(--bg-panel);
+            word-break: break-all;
+        }
+
+        .terminal .output::before {
+            content: "❯ ";
+            color: var(--text-muted);
+        }
+
+        /* DIAGRAM PANEL */
+        .diagram-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .diagram-panel svg text {
+            font-family: var(--font-mono);
+            fill: var(--text);
+        }
+
+        .diagram-panel svg .diagram-label {
+            fill: var(--text-muted);
+        }
+
+        /* PITFALLS */
+        .pitfall-row {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            padding: 12px 0 12px 16px;
+            border-left: 3px solid var(--coral);
+            margin-bottom: 12px;
+        }
+
+        .pitfall-row.fix {
+            border-left-color: var(--mint);
+        }
+
+        .pitfall-row .tag {
+            font-family: var(--font-mono);
+            font-size: 0.6em;
+            color: var(--coral);
+            flex-shrink: 0;
+            width: 4.5em;
+            font-weight: 600;
+        }
+
+        .pitfall-row.fix .tag {
+            color: var(--mint);
+        }
+
+        .pitfall-row p {
+            margin: 0;
+            font-size: 0.82em;
+        }
+
+        /* TEACHER NOTE */
+        .teacher-note {
+            margin-top: 16px;
+            padding: 8px 12px;
+            background: rgba(255, 176, 32, 0.08);
+            border-left: 3px solid var(--amber);
+            font-size: 0.68em;
+            color: var(--amber);
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* OVERFLOW & MATH */
+        .reveal img {
+            max-height: 55vh;
+            width: auto;
+            max-width: 100%;
+        }
+
+        .reveal pre {
+            max-height: 60vh;
+            width: 100%;
+        }
+
+        .reveal pre code {
+            max-height: 60vh;
+        }
+
+        .reveal .katex {
+            font-size: 0.95em;
+            color: var(--text);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- TITLE SLIDE -->
+            <section class="title-slide">
+                <p class="eyebrow">Khóa AI D24 — ProPTIT</p>
+                <h1>Lập trình Giao diện &amp; Tích hợp API</h1>
+                <p style="font-size: 1.1em; color: var(--cyan); margin-top: -8px; font-weight: 500;">Interface
+                    Programming &amp; API Integration</p>
+                <hr class="rule">
+                <aside class="notes">Chào mừng các bạn học viên D24 đến với buổi 06. Hôm nay chúng ta sẽ biến các mô
+                    hình AI và Backend FastAPI thành ứng dụng có giao diện tương tác thực sự và làm chủ giao thức Model
+                    Context Protocol (MCP) hiện đại.</aside>
+            </section>
+
+            <!-- OBJECTIVES SLIDE -->
+            <section>
+                <h2>Mục tiêu buổi học</h2>
+                <ul class="objectives">
+                    <li class="fragment">Nắm vững giao thức MCP và tích hợp Google Stitch vào IDE</li>
+                    <li class="fragment">Làm chủ cơ chế thực thi Top-to-bottom và quản lý Session State trong Streamlit
+                    </li>
+                    <li class="fragment">Kết nối thành thạo giao diện Streamlit với FastAPI Backend qua HTTP POST</li>
+                    <li class="fragment">Triển khai HTTP Streaming tạo hiệu ứng gõ chữ thời gian thực</li>
+                </ul>
+                <div class="teacher-note">💡 Trọng tâm: Kết hợp lập trình Web AI thực chiến với xu hướng Agentic AI mới
+                    nhất.</div>
+                <aside class="notes">Nhấn mạnh 4 mục tiêu đầu ra. Sau buổi học, học viên tự tin làm demo đồ án hoàn
+                    chỉnh có giao diện mượt mà và kết nối backend chuyên nghiệp.</aside>
+            </section>
+
+            <!-- CONTENT SLIDE: Lộ trình buổi học (120 phút) -->
+            <section>
+                <h2>Lộ trình buổi học (120 phút)</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Phần 1 (5'):</strong> Khởi động &amp; Ôn tập: Từ Backend đến
+                                Frontend UI</li>
+                            <li class="fragment"><strong>Phần 2 (55'):</strong> Công cụ UI, Chuyên đề MCP &amp; Google
+                                Stitch, Streamlit</li>
+                            <li class="fragment"><strong>Phần 3 (40'):</strong> Kết nối Giao diện Streamlit với FastAPI
+                                Backend</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Phần 4 (10'):</strong> Streaming Data từ API lên Streamlit
+                                (SSE)</li>
+                            <li class="fragment"><strong>Phần 5 (10'):</strong> Lỗi thường gặp, Tổng kết &amp; Bài tập
+                                về nhà</li>
+                        </ul>
+                        <div class="teacher-note">💡 Phân bổ: 70% thời lượng dành cho thực hành viết mã và cấu hình công
+                            cụ.</div>
+                    </div>
+                </div>
+                <aside class="notes">Điểm nhanh tiến trình bài giảng để học viên chủ động theo dõi và chuẩn bị mở sẵn
+                    IDE.</aside>
+            </section>
+
+            <!-- SECTION DIVIDER 01 -->
+            <section class="divider-slide">
+                <div class="index">01</div>
+                <div class="divider-title">
+                    <h2>Khởi động &amp; Ôn tập nhanh</h2>
+                    <p>Từ API Dịch vụ đến Backend &amp; Frontend UI trực quan (5 phút)</p>
+                </div>
+                <aside class="notes">Bắt đầu Phần 1: Ôn tập nhanh kiến thức gọi API dịch vụ ở buổi trước và đặt vấn đề tại sao cần làm Frontend UI &amp; Backend API.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Tại sao cần Frontend UI? -->
+            <section>
+                <h2>Tại sao cần Frontend UI?</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Đã học ở buổi trước:</strong> Khái niệm API, HTTP Request/Response và các API dịch vụ (OpenAI, Gemini...)</li>
+                            <li class="fragment"><strong>Vấn đề:</strong> Cần tự đóng gói mô hình AI thành Backend API và người dùng cuối không thể dùng Postman hay đọc raw JSON</li>
+                            <li class="fragment">Họ cần nút bấm, ô nhập văn bản và biểu đồ trực quan</li>
+                            <li class="fragment"><strong>Nhiệm vụ hôm nay:</strong> Tạo Backend API (FastAPI) &amp; Frontend UI (Gradio/Streamlit) kết hợp MCP Stitch</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 170" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                                <marker id="arrow-coral" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--coral)"></path>
+                                </marker>
+                            </defs>
+                            <circle cx="50" cy="40" r="18" fill="var(--bg-panel-2)" stroke="var(--amber)"
+                                stroke-width="2"></circle>
+                            <text x="50" y="44" font-size="10" text-anchor="middle" fill="var(--text)">User</text>
+                            <text x="50" y="70" font-size="8" text-anchor="middle" fill="var(--text-muted)">Non-tech /
+                                Giám khảo</text>
+
+                            <rect x="180" y="18" width="130" height="44" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--coral)" stroke-width="1.5"></rect>
+                            <text x="245" y="36" font-size="9" text-anchor="middle" fill="var(--coral)">Swagger /
+                                Postman</text>
+                            <text x="245" y="50" font-size="8" text-anchor="middle" fill="var(--text-muted)">Khó dùng,
+                                raw JSON</text>
+                            <line x1="72" y1="40" x2="176" y2="40" stroke="var(--coral)" stroke-width="2"
+                                stroke-dasharray="4 3" marker-end="url(#arrow-coral)"></line>
+                            <text x="125" y="32" font-size="12" text-anchor="middle" fill="var(--coral)">✕</text>
+
+                            <rect x="180" y="95" width="130" height="55" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="245" y="116" font-size="10" text-anchor="middle" fill="var(--mint)">Streamlit Web
+                                UI</text>
+                            <text x="245" y="132" font-size="8" text-anchor="middle" fill="var(--text-muted)">Nút bấm,
+                                form, đồ thị</text>
+                            <path d="M 50 62 L 50 122 L 176 122" fill="none" stroke="var(--cyan)" stroke-width="2"
+                                marker-end="url(#arrow)"></path>
+                            <text x="120" y="115" font-size="10" text-anchor="middle" fill="var(--mint)">✓ Thân
+                                thiện</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Swagger UI rất tốt cho dev backend nhưng không thể dùng để thuyết trình hay đưa
+                    khách hàng trải nghiệm.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Kiến trúc Nhà hàng 3 Tầng &amp; Decoupling -->
+            <section>
+                <h2>Kiến trúc Nhà hàng 3 Tầng &amp; Decoupling</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Tầng 1 - Phòng ăn:</strong> Frontend UI lo hiển thị, thu thập
+                                tương tác</li>
+                            <li class="fragment"><strong>Tầng 2 - Bồi bàn:</strong> FastAPI Backend nhận order, bóc tách
+                                JSON và chuyển món</li>
+                            <li class="fragment"><strong>Tầng 3 - Bếp chính:</strong> AI Model Core xử lý tính toán nặng
+                                trên GPU</li>
+                            <li class="fragment"><strong>Decoupling:</strong> Tách biệt giao diện khỏi mô hình để dễ bảo
+                                trì, scale độc lập</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 180" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                                <marker id="arr-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--mint)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="20" y="15" width="300" height="42" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="170" y="32" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">Tầng 1: Phòng ăn (UI / Streamlit)</text>
+                            <text x="170" y="46" font-size="8" text-anchor="middle" fill="var(--text-muted)">Tiếp xúc
+                                người dùng • Trực quan, thân thiện</text>
+
+                            <line x1="140" y1="58" x2="140" y2="70" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-c)"></line>
+                            <line x1="200" y1="70" x2="200" y2="58" stroke="var(--mint)" stroke-width="1.5"
+                                marker-end="url(#arr-m)"></line>
+                            <text x="108" y="66" font-size="7" fill="var(--cyan)">Request</text>
+                            <text x="232" y="66" font-size="7" fill="var(--mint)">Response</text>
+
+                            <rect x="20" y="73" width="300" height="42" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="170" y="90" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">Tầng 2: Bồi bàn (API / FastAPI)</text>
+                            <text x="170" y="104" font-size="8" text-anchor="middle" fill="var(--text-muted)">Xác thực
+                                Pydantic • Điều phối dữ liệu</text>
+
+                            <line x1="140" y1="116" x2="140" y2="128" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-c)"></line>
+                            <line x1="200" y1="128" x2="200" y2="116" stroke="var(--mint)" stroke-width="1.5"
+                                marker-end="url(#arr-m)"></line>
+
+                            <rect x="20" y="131" width="300" height="42" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="170" y="148" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">Tầng 3: Bếp chính (AI Model Core)</text>
+                            <text x="170" y="162" font-size="8" text-anchor="middle" fill="var(--text-muted)">Tiêu tốn
+                                GPU/RAM • Trọng số mô hình</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Tuyệt đối không nhúng mô hình AI nặng trực tiếp vào script giao diện
+                    Streamlit.</div>
+                <aside class="notes">Giải thích kiến trúc 3 tầng: Nếu gộp model vào UI, mỗi lần người dùng bấm nút làm
+                    rerun cả script thì GPU sẽ bị quá tải hoặc reload lại model.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Vai trò của Mock Function -->
+            <section>
+                <h2>Vai trò của Mock Function</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">mock_model.py</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+def mock_model(text: str) -> dict:
+    """Hàm giả lập kết quả mô hình AI."""
+    clean = text.strip()
+    label = "POSITIVE" if len(clean) % 2 == 0 else "NEGATIVE"
+    return {
+        "predicted_label": label,
+        "confidence": 0.9425
+    }
+</code></pre>
+                            <div class="output">mock_model('ProPTIT D24') ➔ {'predicted_label': 'NEGATIVE',
+                                'confidence': 0.9425}</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Giả lập khi AI Model đang train hoặc quá nặng cho máy cá nhân</li>
+                            <li class="fragment"><strong>Mock Function:</strong> Hàm giả lập output chuẩn để thông luồng
+                                kết nối</li>
+                            <li class="fragment">Kiểm tra thông luồng UI ↔ API trước khi cắm mô hình thực tế</li>
+                            <li class="fragment">Phát hiện sớm lỗi giao tiếp mạng và parsing JSON mà không cần GPU</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Thói quen kỹ sư chuyên nghiệp: Luôn dùng mock function để phân lập lỗi UI
+                    và lỗi Model.</div>
+                <aside class="notes">Nhấn mạnh tầm quan trọng của Mock function. Nhờ có mock function, đội frontend và
+                    backend có thể làm việc song song mà không chờ mô hình train xong.</aside>
+            </section>
+
+            <!-- SECTION DIVIDER 02 -->
+            <section class="divider-slide">
+                <div class="index">02</div>
+                <div class="divider-title">
+                    <h2>Công cụ Giao diện &amp; Chuyên đề MCP</h2>
+                    <p>Gradio, Model Context Protocol, Google Stitch và Streamlit (55 phút)</p>
+                </div>
+                <aside class="notes">Bắt đầu Phần 2: Đi qua Gradio, chuyên đề chuyên sâu về giao thức MCP và công cụ
+                    Streamlit.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Gradio: UI Thử nghiệm Siêu tốc (10') -->
+            <section>
+                <h2>Gradio: UI Thử nghiệm Siêu tốc (10')</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Biến bất kỳ hàm Python thành Web UI chỉ trong 3 dòng code</li>
+                            <li class="fragment">Cốt lõi: <code>gr.Interface(fn, inputs, outputs)</code></li>
+                            <li class="fragment">Tự động sinh component theo kiểu dữ liệu (Textbox, Image, Audio)</li>
+                            <li class="fragment">Tham số <code>share=True</code>: Tạo link public 72h cho đồng đội test
+                            </li>
+                            <li class="fragment"><strong>Hạn chế:</strong> Khó tùy biến bố cục nhiều cột và CSS phức tạp
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-gr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="20" width="90" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="55" y="42" font-size="9" text-anchor="middle" fill="var(--cyan)">Python
+                                Function</text>
+                            <text x="55" y="54" font-size="7" text-anchor="middle" fill="var(--text-muted)">fn =
+                                mock_model</text>
+
+                            <line x1="102" y1="42" x2="132" y2="42" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-gr)"></line>
+
+                            <rect x="135" y="15" width="90" height="55" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="180" y="38" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--amber)">gr.Interface</text>
+                            <text x="180" y="52" font-size="7" text-anchor="middle" fill="var(--text-muted)">inputs ➔
+                                outputs</text>
+
+                            <line x1="227" y1="42" x2="257" y2="42" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-gr)"></line>
+
+                            <rect x="260" y="20" width="70" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="295" y="40" font-size="9" text-anchor="middle" fill="var(--mint)">Web UI</text>
+                            <text x="295" y="54" font-size="7" text-anchor="middle" fill="var(--text-muted)">Port
+                                7860</text>
+
+                            <rect x="50" y="95" width="240" height="45" rx="6" fill="var(--bg-panel)"
+                                stroke="var(--line)" stroke-width="1"></rect>
+                            <text x="170" y="114" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">share=True: Public Link 72h</text>
+                            <text x="170" y="128" font-size="8" text-anchor="middle" fill="var(--text-muted)">Chia sẻ
+                                trực tiếp qua link xxxx.gradio.live</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Gradio rất thích hợp cho nghiên cứu và hackathon ngắn ngày, nhưng hạn chế về layout
+                    tự do.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Thực hành: Bọc hàm với Gradio -->
+            <section>
+                <h2>Thực hành: Bọc hàm với Gradio</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">gradio_quickstart.py</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+import gradio as gr
+
+def mock_analyze(text: str) -> str:
+    clean = text.strip()
+    res = "TÍCH CỰC" if len(clean) % 2 == 0 else "TIÊU CỰC"
+    return f"Kết quả: {res} | Tin cậy: 95%"
+
+demo = gr.Interface(
+    fn=mock_analyze,
+    inputs=gr.Textbox(lines=3, placeholder="Nhập câu..."),
+    outputs=gr.Textbox(label="Kết quả dự đoán"),
+    title="Phân Tích Cảm Xúc - ProPTIT D24"
+)
+
+if __name__ == "__main__":
+    demo.launch(server_port=7860)
+</code></pre>
+                            <div class="output">Running on local URL: http://127.0.0.1:7860</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>fn</code>: Chỉ định hàm xử lý logic mục tiêu</li>
+                            <li class="fragment"><code>inputs=gr.Textbox</code>: Tự động render ô nhập văn bản nhiều
+                                dòng</li>
+                            <li class="fragment"><code>outputs=gr.Textbox</code>: Tự động hiển thị kết quả trả về từ hàm
+                            </li>
+                            <li class="fragment"><code>demo.launch()</code>: Khởi động máy chủ web local tại port 7860
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Thử nghiệm thêm share=True để xem đường link public tức thì.</div>
+                <aside class="notes">Cho học viên xem code mẫu và thấy được sự đơn giản của Gradio.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Khủng hoảng Tích hợp trước MCP -->
+            <section>
+                <h2>Khủng hoảng Tích hợp trước MCP</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Mỗi dịch vụ (Figma, GitHub, DB, Stitch) sở hữu một SDK/API riêng</li>
+                            <li class="fragment">Dev phải tự viết adapter riêng cho từng dịch vụ nối vào AI</li>
+                            <li class="fragment">AI Agent không thể tự khám phá công cụ mới nếu chưa hardcode</li>
+                            <li class="fragment"><strong>Hệ quả:</strong> Ma trận $N \times M$ gây bùng nổ độ phức tạp
+                                tích hợp</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 180" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="25" width="80" height="30" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="50" y="44" font-size="8" text-anchor="middle" fill="var(--cyan)">Claude</text>
+                            <rect x="10" y="75" width="80" height="30" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="50" y="94" font-size="8" text-anchor="middle" fill="var(--cyan)">GPT-4o</text>
+                            <rect x="10" y="125" width="80" height="30" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="50" y="144" font-size="8" text-anchor="middle" fill="var(--cyan)">DeepSeek</text>
+
+                            <rect x="250" y="15" width="80" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="290" y="33" font-size="8" text-anchor="middle" fill="var(--amber)">Stitch UI</text>
+                            <rect x="250" y="55" width="80" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="290" y="73" font-size="8" text-anchor="middle" fill="var(--amber)">GitHub</text>
+                            <rect x="250" y="95" width="80" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="290" y="113" font-size="8" text-anchor="middle" fill="var(--amber)">Database</text>
+                            <rect x="250" y="135" width="80" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="290" y="153" font-size="8" text-anchor="middle" fill="var(--amber)">Figma</text>
+
+                            <g stroke="var(--coral)" stroke-width="1" stroke-dasharray="3 2" opacity="0.7">
+                                <line x1="90" y1="40" x2="250" y2="29"></line>
+                                <line x1="90" y1="40" x2="250" y2="69"></line>
+                                <line x1="90" y1="40" x2="250" y2="109"></line>
+                                <line x1="90" y1="90" x2="250" y2="29"></line>
+                                <line x1="90" y1="90" x2="250" y2="69"></line>
+                                <line x1="90" y1="90" x2="250" y2="149"></line>
+                                <line x1="90" y1="140" x2="250" y2="69"></line>
+                                <line x1="90" y1="140" x2="250" y2="109"></line>
+                                <line x1="90" y1="140" x2="250" y2="149"></line>
+                            </g>
+                            <text x="170" y="95" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--coral)">Ma trận N x M</text>
+                            <text x="170" y="110" font-size="7" text-anchor="middle" fill="var(--text-muted)">Phân mảnh
+                                &amp; Rời rạc</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Phân tích tình trạng phân mảnh kết nối trước khi Anthropic ra mắt chuẩn MCP vào
+                    cuối năm 2024.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Model Context Protocol (MCP) là gì? -->
+            <section>
+                <h2>Model Context Protocol (MCP) là gì?</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Giao thức kết nối mở do <strong>Anthropic</strong> khởi xướng (cuối
+                                2024)</li>
+                            <li class="fragment">Được ví như <strong>"Cổng USB Type-C của thế giới AI"</strong></li>
+                            <li class="fragment">Chuẩn hóa giao tiếp giữa AI Host và công cụ / dữ liệu bên ngoài</li>
+                            <li class="fragment">Chuyển kiến trúc phức tạp $N \times M$ thành chuẩn kết nối $N + M$</li>
+                            <li class="fragment">Tích hợp sẵn trong Antigravity IDE, Cursor, Claude Desktop</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 180" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="30" width="75" height="32" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="47" y="50" font-size="8" text-anchor="middle" fill="var(--cyan)">Claude</text>
+                            <rect x="10" y="75" width="75" height="32" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="47" y="95" font-size="8" text-anchor="middle" fill="var(--cyan)">Cursor /
+                                IDE</text>
+                            <rect x="10" y="120" width="75" height="32" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="47" y="140" font-size="8" text-anchor="middle" fill="var(--cyan)">DeepSeek</text>
+
+                            <rect x="120" y="20" width="100" height="140" rx="8" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="2"></rect>
+                            <text x="170" y="55" font-size="11" font-weight="700" text-anchor="middle"
+                                fill="var(--mint)">GIAO THỨC</text>
+                            <text x="170" y="72" font-size="13" font-weight="700" text-anchor="middle"
+                                fill="var(--cyan)">MCP</text>
+                            <text x="170" y="95" font-size="8" text-anchor="middle" fill="var(--amber)">"USB-C cho
+                                AI"</text>
+                            <text x="170" y="120" font-size="7" text-anchor="middle" fill="var(--text-muted)">JSON-RPC
+                                2.0</text>
+                            <text x="170" y="135" font-size="7" text-anchor="middle" fill="var(--mint)">Stdio /
+                                SSE</text>
+
+                            <rect x="255" y="25" width="75" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="292" y="42" font-size="8" text-anchor="middle" fill="var(--amber)">Stitch UI</text>
+                            <rect x="255" y="65" width="75" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="292" y="82" font-size="8" text-anchor="middle" fill="var(--amber)">GitHub</text>
+                            <rect x="255" y="105" width="75" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="292" y="122" font-size="8" text-anchor="middle" fill="var(--amber)">Database</text>
+                            <rect x="255" y="145" width="75" height="28" rx="4" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="292" y="162" font-size="8" text-anchor="middle"
+                                fill="var(--amber)">FileSystem</text>
+
+                            <line x1="85" y1="46" x2="120" y2="60" stroke="var(--cyan)" stroke-width="1.5"></line>
+                            <line x1="85" y1="91" x2="120" y2="90" stroke="var(--cyan)" stroke-width="1.5"></line>
+                            <line x1="85" y1="136" x2="120" y2="120" stroke="var(--cyan)" stroke-width="1.5"></line>
+
+                            <line x1="220" y1="60" x2="255" y2="39" stroke="var(--mint)" stroke-width="1.5"></line>
+                            <line x1="220" y1="80" x2="255" y2="79" stroke="var(--mint)" stroke-width="1.5"></line>
+                            <line x1="220" y1="100" x2="255" y2="119" stroke="var(--mint)" stroke-width="1.5"></line>
+                            <line x1="220" y1="120" x2="255" y2="159" stroke="var(--mint)" stroke-width="1.5"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Tương tự USB-C thay thế mọi loại cáp, MCP chuẩn hóa mọi tích hợp của AI
+                    Agent.</div>
+                <aside class="notes">Hình tượng USB-C giúp học viên hiểu ngay bản chất của MCP là một giao thức chuẩn
+                    hóa mở.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: 3 Thành phần Trụ cột trong MCP -->
+            <section>
+                <h2>3 Thành phần Trụ cột trong MCP</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Resources:</strong> Dữ liệu chỉ đọc (file canvas, DB schema,
+                                log hệ thống)</li>
+                            <li class="fragment"><strong>Tools:</strong> Các hàm thực thi có schema tham số rõ ràng để
+                                Agent gọi</li>
+                            <li class="fragment"><strong>Prompts:</strong> Mẫu câu lệnh chuẩn hóa kích hoạt tác vụ hiệu
+                                quả</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 180" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="20" width="100" height="140" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="60" y="45" font-size="11" font-weight="700" text-anchor="middle"
+                                fill="var(--cyan)">RESOURCES</text>
+                            <text x="60" y="65" font-size="8" text-anchor="middle" fill="var(--text)">Tài nguyên Dữ
+                                liệu</text>
+                            <line x1="20" y1="75" x2="100" y2="75" stroke="var(--line)" stroke-width="1"></line>
+                            <text x="60" y="95" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Read-only
+                                data</text>
+                            <text x="60" y="112" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Tương tự
+                                GET</text>
+                            <text x="60" y="130" font-size="8" text-anchor="middle" fill="var(--text-muted)">• File,
+                                Schema DB</text>
+
+                            <rect x="120" y="20" width="100" height="140" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="170" y="45" font-size="11" font-weight="700" text-anchor="middle"
+                                fill="var(--signal)">TOOLS</text>
+                            <text x="170" y="65" font-size="8" text-anchor="middle" fill="var(--text)">Công cụ Hành
+                                động</text>
+                            <line x1="130" y1="75" x2="210" y2="75" stroke="var(--line)" stroke-width="1"></line>
+                            <text x="170" y="95" font-size="8" text-anchor="middle" fill="var(--text-muted)">•
+                                Executable fn</text>
+                            <text x="170" y="112" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Tương tự
+                                POST</text>
+                            <text x="170" y="130" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Có
+                                Schema rõ</text>
+
+                            <rect x="230" y="20" width="100" height="140" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="280" y="45" font-size="11" font-weight="700" text-anchor="middle"
+                                fill="var(--mint)">PROMPTS</text>
+                            <text x="280" y="65" font-size="8" text-anchor="middle" fill="var(--text)">Mẫu Câu
+                                lệnh</text>
+                            <line x1="240" y1="75" x2="320" y2="75" stroke="var(--line)" stroke-width="1"></line>
+                            <text x="280" y="95" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Prompt
+                                mẫu</text>
+                            <text x="280" y="112" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Workflow
+                                chuẩn</text>
+                            <text x="280" y="130" font-size="8" text-anchor="middle" fill="var(--text-muted)">• Tối ưu
+                                ngữ cảnh</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Resources = GET (đọc dữ liệu); Tools = POST (thực thi hành động có
+                    side-effect).</div>
+                <aside class="notes">3 trụ cột này định nghĩa toàn bộ khả năng tương tác của MCP Server.</aside>
+            </section>
+
+            <!-- FULL DIAGRAM SLIDE: Kiến trúc 3 Tầng của Hệ sinh thái MCP -->
+            <section>
+                <h2>Kiến trúc 3 Tầng của Hệ sinh thái MCP</h2>
+                <div class="diagram-panel">
+                    <svg viewBox="0 0 480 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arr-rpc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6"
+                                orient="auto-start-reverse">
+                                <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                            </marker>
+                            <marker id="arr-rpc2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6"
+                                orient="auto-start-reverse">
+                                <path d="M0,0 L10,5 L0,10 z" fill="var(--mint)"></path>
+                            </marker>
+                        </defs>
+                        <rect x="20" y="20" width="440" height="48" rx="6" fill="var(--bg-panel-2)" stroke="var(--cyan)"
+                            stroke-width="1.5"></rect>
+                        <text x="40" y="48" font-size="11" font-weight="700" fill="var(--cyan)">AI IDE (MCP HOST)</text>
+                        <text x="180" y="48" font-size="9" fill="var(--text)">[AI Coding Agent / LLM Engine]</text>
+                        <text x="350" y="48" font-size="9" fill="var(--amber)">[MCP Client Manager]</text>
+
+                        <line x1="240" y1="68" x2="240" y2="86" stroke="var(--cyan)" stroke-width="2"
+                            marker-end="url(#arr-rpc)"></line>
+                        <line x1="260" y1="86" x2="260" y2="68" stroke="var(--mint)" stroke-width="2"
+                            marker-end="url(#arr-rpc2)"></line>
+                        <text x="290" y="79" font-size="8" fill="var(--text-muted)">JSON-RPC 2.0 (Stdio / SSE)</text>
+
+                        <rect x="20" y="88" width="440" height="50" rx="6" fill="var(--bg-panel-2)" stroke="var(--mint)"
+                            stroke-width="1.5"></rect>
+                        <text x="40" y="112" font-size="11" font-weight="700" fill="var(--mint)">GOOGLE STITCH MCP
+                            SERVER</text>
+                        <text x="40" y="127" font-size="8" fill="var(--text-muted)">Tools: get_canvas_hierarchy,
+                            export_tokens • Resources: stitch://project-d24/ui</text>
+
+                        <line x1="240" y1="138" x2="240" y2="152" stroke="var(--cyan)" stroke-width="1.5"
+                            marker-end="url(#arr-rpc)"></line>
+
+                        <rect x="20" y="154" width="440" height="36" rx="6" fill="var(--bg-panel)" stroke="var(--line)"
+                            stroke-width="1"></rect>
+                        <text x="240" y="176" font-size="9" font-weight="600" text-anchor="middle"
+                            fill="var(--text-muted)">Google Stitch Cloud Platform (Nền tảng Thiết kế &amp; Canvas
+                            UI)</text>
+                    </svg>
+                </div>
+                <div class="teacher-note">💡 MCP Host (IDE) kết nối MCP Server thông qua JSON-RPC 2.0 qua Standard I/O
+                    hoặc SSE.</div>
+                <aside class="notes">Giải thích kiến trúc 3 tầng: Host (IDE), Server (MCP process), Cloud/Tools. Nhờ
+                    JSON-RPC 2.0, Host không cần biết Server viết bằng Python hay Node.js.</aside>
+            </section>
+
+            <!-- CONTENT SLIDE: So sánh Toàn diện: MCP vs. API Truyền thống -->
+            <section>
+                <h2>So sánh Toàn diện: MCP vs. API Truyền thống</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <h3 style="color: var(--signal);">API Truyền thống (REST / HTTP)</h3>
+                        <ul>
+                            <li class="fragment"><strong>Lời gọi:</strong> Dev tự viết code cứng và parse JSON thủ công
+                            </li>
+                            <li class="fragment"><strong>Khám phá:</strong> Schema tĩnh, dev đọc Swagger và hardcode
+                                endpoint</li>
+                            <li class="fragment"><strong>Làm UI:</strong> Tự nhìn mockup rồi gõ tay từng dòng code</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <h3 style="color: var(--mint);">Giao thức MCP (JSON-RPC 2.0)</h3>
+                        <ul>
+                            <li class="fragment"><strong>Lời gọi:</strong> AI Agent tự gọi tool theo ngữ cảnh prompt
+                            </li>
+                            <li class="fragment"><strong>Khám phá:</strong> Schema động, Agent tự phát hiện Tool &amp;
+                                Schema</li>
+                            <li class="fragment"><strong>Làm UI:</strong> Agent đọc Canvas qua MCP, tự sinh code chuẩn
+                                xác</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Bảng so sánh then chốt: Giúp học viên hiểu rõ bước dịch chuyển từ việc code tay
+                    sang chỉ huy Agent.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Google Stitch: AI-Powered UI Design -->
+            <section>
+                <h2>Google Stitch: AI-Powered UI Design</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Nền tảng thiết kế UI dựa trên Generative AI của <strong>Google
+                                    Labs</strong></li>
+                            <li class="fragment">Nhập mô tả văn bản hoặc tải ảnh phác thảo tay lên canvas</li>
+                            <li class="fragment">Tự động sinh ra các màn hình Web/Mobile UI hoàn chỉnh và hiện đại</li>
+                            <li class="fragment">Quản lý đầy đủ Color Palette, Padding, Margins và Component Tree</li>
+                            <li class="fragment">Truy cập tại: <code>stitch.withgoogle.com</code></li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-st" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="25" width="85" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="52" y="44" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--amber)">Prompt / Phác thảo</text>
+                            <text x="52" y="58" font-size="7" text-anchor="middle" fill="var(--text-muted)">Mô tả
+                                Dashboard</text>
+
+                            <line x1="97" y1="47" x2="127" y2="47" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-st)"></line>
+
+                            <rect x="130" y="20" width="90" height="55" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="175" y="42" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">Google Stitch</text>
+                            <text x="175" y="56" font-size="7" text-anchor="middle" fill="var(--text-muted)">AI Design
+                                Engine</text>
+
+                            <line x1="222" y1="47" x2="252" y2="47" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-st)"></line>
+
+                            <rect x="255" y="25" width="75" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="292" y="44" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">Canvas UI</text>
+                            <text x="292" y="58" font-size="7" text-anchor="middle" fill="var(--text-muted)">Full
+                                Elements</text>
+
+                            <rect x="25" y="95" width="290" height="48" rx="6" fill="var(--bg-panel)"
+                                stroke="var(--line)" stroke-width="1"></rect>
+                            <text x="170" y="114" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">Cung cấp Bản thiết kế có cấu trúc:</text>
+                            <text x="170" y="130" font-size="7" text-anchor="middle" fill="var(--text-muted)">• Bảng mã
+                                màu (Color Tokens) • Bố cục phân cấp (DOM Tree) • Spacing &amp; Components</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Giới thiệu Google Stitch như một công cụ thiết kế UI đột phá do Google phát triển.
+                </aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Điểm đột phá: Stitch + MCP Server -->
+            <section>
+                <h2>Điểm đột phá: Stitch + MCP Server</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Kỹ sư không cần mở web soi mã màu rồi gõ code tay</li>
+                            <li class="fragment">AI Coding Agent trong IDE gọi trực tiếp tool của Stitch MCP Server</li>
+                            <li class="fragment">Agent đọc thông số Canvas (DOM Tree, Layout, Padding, Colors)</li>
+                            <li class="fragment">Tự động chuyển đổi thành mã nguồn Streamlit chuẩn xác từng pixel</li>
+                            <li class="fragment">Rút ngắn thời gian từ ý tưởng sang code chạy được xuống vài giây!</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-pipe" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="30" width="85" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="52" y="50" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--amber)">Stitch Canvas</text>
+                            <text x="52" y="64" font-size="7" text-anchor="middle" fill="var(--text-muted)">Design
+                                Specs</text>
+
+                            <line x1="97" y1="52" x2="127" y2="52" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-pipe)"></line>
+
+                            <rect x="130" y="30" width="85" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="172" y="50" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">MCP Server</text>
+                            <text x="172" y="64" font-size="7" text-anchor="middle" fill="var(--text-muted)">Tool
+                                get_canvas</text>
+
+                            <line x1="217" y1="52" x2="247" y2="52" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-pipe)"></line>
+
+                            <rect x="250" y="30" width="80" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="290" y="50" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">AI Agent (IDE)</text>
+                            <text x="290" y="64" font-size="7" text-anchor="middle" fill="var(--text-muted)">Sinh code
+                                Python</text>
+
+                            <rect x="40" y="98" width="260" height="42" rx="6" fill="var(--bg-panel)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="170" y="117" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">Xuất file Streamlit (.py) hoàn chỉnh</text>
+                            <text x="170" y="131" font-size="7" text-anchor="middle" fill="var(--text-muted)">Khớp chính
+                                xác từng mã màu và component layout</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Nhấn mạnh sự giải phóng sức lao động khi kết hợp công cụ AI design và giao thức
+                    MCP.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Cấu hình Stitch MCP Server (`mcp.json`) -->
+            <section>
+                <h2>Cấu hình Stitch MCP Server (`mcp.json`)</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">mcp.json</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+{
+  "mcpServers": {
+    "stitch-designer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@google/stitch-mcp-server",
+        "--project-id", "proptit-d24-ai",
+        "--api-key", "AIzaSyYOUR_STITCH_KEY"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+</code></pre>
+                            <div class="output">MCP Server [stitch-designer] connected! Available tools: 3</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Khai báo cấu hình trong file thiết lập MCP của IDE (Cursor /
+                                Antigravity)</li>
+                            <li class="fragment"><code>command</code>: Lệnh thực thi tiến trình server qua Node.js
+                                (<code>npx</code>)</li>
+                            <li class="fragment"><code>args</code>: Tên package MCP kèm Project ID và API Key xác thực
+                            </li>
+                            <li class="fragment">Lưu file và khởi động lại bảng điều khiển MCP để IDE nạp tools</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Sau khi kết nối thành công, biểu tượng MCP trong IDE sẽ chuyển màu xanh.
+                </div>
+                <aside class="notes">Chỉ dẫn từng trường cấu hình trong file mcp.json để học viên tự cài đặt vào IDE của
+                    mình.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Ra lệnh cho AI Agent với Stitch MCP -->
+            <section>
+                <h2>Ra lệnh cho AI Agent với Stitch MCP</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Mở khung chat trong AI IDE (Cursor / Antigravity)</li>
+                            <li class="fragment">Cung cấp prompt yêu cầu Agent gọi tool từ <code>stitch-designer</code>:
+                                <div
+                                    style="background: var(--bg-panel-2); padding: 6px 10px; border-left: 3px solid var(--cyan); margin: 6px 0; font-size: 0.76em; font-style: italic;">
+                                    "Đọc layout Dashboard từ Stitch và sinh mã Streamlit tương ứng."
+                                </div>
+                            </li>
+                            <li class="fragment">Agent tự động gọi tool, phân tích DOM Tree và sinh code hoàn chỉnh</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-pf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="20" width="80" height="40" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--amber)" stroke-width="1.5"></rect>
+                            <text x="50" y="42" font-size="8" text-anchor="middle" fill="var(--amber)">Prompt Yêu
+                                Cầu</text>
+
+                            <line x1="92" y1="40" x2="118" y2="40" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-pf)"></line>
+
+                            <rect x="120" y="15" width="100" height="50" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="170" y="38" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">Agent Tool Call</text>
+                            <text x="170" y="52" font-size="7" text-anchor="middle"
+                                fill="var(--text-muted)">get_canvas_hierarchy</text>
+
+                            <line x1="222" y1="40" x2="248" y2="40" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-pf)"></line>
+
+                            <rect x="250" y="20" width="80" height="40" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="290" y="38" font-size="8" text-anchor="middle" fill="var(--mint)">JSON
+                                Layout</text>
+                            <text x="290" y="50" font-size="7" text-anchor="middle" fill="var(--text-muted)">Colors,
+                                widgets</text>
+
+                            <rect x="40" y="90" width="260" height="50" rx="6" fill="var(--bg-panel)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="170" y="112" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">Agent sinh file app.py (Streamlit)</text>
+                            <text x="170" y="128" font-size="7" text-anchor="middle" fill="var(--text-muted)">Tự động
+                                map Button, Textarea, Metrics theo đúng bản vẽ</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Minh họa luồng prompt thực tế: Thay vì dev code tay, dev ra lệnh cho agent truy cập
+                    canvas thiết kế qua MCP.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Streamlit: Framework UI cho AI &amp; Data (20') -->
+            <section>
+                <h2>Streamlit: Framework UI cho AI &amp; Data (20')</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Xây dựng ứng dụng web tương tác hoàn chỉnh bằng <strong>100%
+                                    Python</strong></li>
+                            <li class="fragment">Không cần viết một dòng code HTML, CSS hay JavaScript nào</li>
+                            <li class="fragment">Tương thích hoàn hảo với hệ sinh thái AI: NumPy, Pandas, PyTorch,
+                                Plotly</li>
+                            <li class="fragment">Cung cấp kho widget cực phong phú: <code>st.text_input</code>,
+                                <code>st.button</code>, <code>st.columns</code></li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-st2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="30" width="85" height="50" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="52" y="52" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">Python Script</text>
+                            <text x="52" y="66" font-size="7" text-anchor="middle" fill="var(--text-muted)">st.write,
+                                st.button</text>
+
+                            <line x1="97" y1="55" x2="127" y2="55" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-st2)"></line>
+
+                            <rect x="130" y="25" width="90" height="60" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="175" y="50" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">Streamlit Engine</text>
+                            <text x="175" y="64" font-size="7" text-anchor="middle" fill="var(--text-muted)">Auto
+                                WebSocket</text>
+
+                            <line x1="222" y1="55" x2="252" y2="55" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-st2)"></line>
+
+                            <rect x="255" y="30" width="75" height="50" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="292" y="52" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">Web Browser</text>
+                            <text x="292" y="66" font-size="7" text-anchor="middle" fill="var(--text-muted)">Reactive
+                                UI</text>
+
+                            <rect x="25" y="102" width="290" height="38" rx="6" fill="var(--bg-panel)"
+                                stroke="var(--line)" stroke-width="1"></rect>
+                            <text x="170" y="124" font-size="8" text-anchor="middle" fill="var(--text-muted)">100% Pure
+                                Python • Không cần HTML, CSS, JavaScript</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Giới thiệu Streamlit: Thư viện làm dashboard số 1 cho kỹ sư AI hiện nay.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Cơ chế: Top-to-Bottom Execution -->
+            <section>
+                <h2>Cơ chế: Top-to-Bottom Execution</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Script Execution Model:</strong> Mô hình chạy theo kịch bản từ
+                                trên xuống</li>
+                            <li class="fragment">Mỗi tương tác người dùng (bấm nút, gõ text, chọn tab)...</li>
+                            <li class="fragment">...đều kích hoạt sự kiện <strong>RERUN</strong></li>
+                            <li class="fragment"><strong>Toàn bộ file .py được thực thi lại từ dòng 1 đến dòng
+                                    cuối!</strong></li>
+                            <li class="fragment">Trình duyệt nhận DOM mới và render lại toàn bộ</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 170" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-tb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--signal)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="20" y="15" width="130" height="38" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="85" y="32" font-size="9" text-anchor="middle" fill="var(--cyan)">Người dùng tương
+                                tác</text>
+                            <text x="85" y="44" font-size="7" text-anchor="middle" fill="var(--text-muted)">Bấm nút / Gõ
+                                text</text>
+
+                            <line x1="85" y1="55" x2="85" y2="70" stroke="var(--signal)" stroke-width="2"
+                                marker-end="url(#arr-tb)"></line>
+
+                            <rect x="20" y="73" width="130" height="38" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="85" y="90" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">Sự kiện RERUN</text>
+                            <text x="85" y="102" font-size="7" text-anchor="middle" fill="var(--text-muted)">Kích hoạt
+                                làm mới</text>
+
+                            <line x1="152" y1="92" x2="188" y2="92" stroke="var(--signal)" stroke-width="2"
+                                marker-end="url(#arr-tb)"></line>
+
+                            <rect x="190" y="25" width="135" height="120" rx="6" fill="var(--bg-panel)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="257" y="48" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">SCRIPT EXECUTION</text>
+                            <line x1="205" y1="58" x2="310" y2="58" stroke="var(--line)" stroke-width="1"></line>
+                            <text x="257" y="75" font-size="8" text-anchor="middle" fill="var(--text)">Chạy từ Dòng
+                                1</text>
+                            <text x="257" y="92" font-size="8" text-anchor="middle" fill="var(--text)">➔ ... tuần tự
+                                ...</text>
+                            <text x="257" y="110" font-size="8" text-anchor="middle" fill="var(--text)">➔ Chạy đến Dòng
+                                cuối</text>
+                            <text x="257" y="130" font-size="7" text-anchor="middle" fill="var(--cyan)">Render lại toàn
+                                bộ UI</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Đây là tư duy cốt lõi nhất của Streamlit, hoàn toàn khác biệt với React hay
+                    Vue.</div>
+                <aside class="notes">Giải thích cơ chế Rerun từ dòng 1 đến dòng cuối. Đây là nguyên nhân dẫn đến lỗi mất
+                    trạng thái nếu không dùng session_state.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Cạm bẫy: Biến thường bị Reset (Stateless) -->
+            <section>
+                <h2>Cạm bẫy: Biến thường bị Reset (Stateless)</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">stateless_bug.py</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+import streamlit as st
+
+count = 0
+if st.button("Tăng số đếm"):
+    count += 1
+
+st.write(f"Số đếm hiện tại: {count}")
+</code></pre>
+                            <div class="output">Bấm lần 1: count = 1. Bấm lần 2: count vẫn là 1!</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Bấm nút ➔ Streamlit rerun toàn bộ script từ dòng 1</li>
+                            <li class="fragment">Dòng <code>count = 0</code> luôn bị chạy lại và gán đè về 0</li>
+                            <li class="fragment">Vào <code>if st.button</code>: tăng lên 1 rồi in ra 1</li>
+                            <li class="fragment">Giá trị <code>count</code> <strong>không bao giờ vượt quá 1!</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Cho học viên 2 phút gõ thử đoạn code này để tận mắt thấy con số bị kẹt ở 1.
+                </div>
+                <aside class="notes">Lỗi kinh điển của người mới học Streamlit. Giảng viên cho học viên thử để ghi nhớ
+                    sâu sắc.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Giải pháp: Quản lý trạng thái với `st.session_state` -->
+            <section>
+                <h2>Giải pháp: Quản lý trạng thái với `st.session_state`</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">stateful_fix.py</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+import streamlit as st
+
+# Khởi tạo an toàn: Chỉ gán lần đầu tiên
+if "count" not in st.session_state:
+    st.session_state.count = 0
+
+if st.button("Tăng số đếm"):
+    st.session_state.count += 1
+
+st.write(f"Số đếm hiện tại: {st.session_state.count}")
+</code></pre>
+                            <div class="output">Bấm lần 1: count = 1. Bấm lần 2: count = 2. Tăng bền vững!</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>st.session_state</code> là Persistent Dictionary gắn liền phiên
+                                duyệt web</li>
+                            <li class="fragment">Lưu giữ giá trị an toàn qua các chu kỳ rerun</li>
+                            <li class="fragment">Toán học chuyển trạng thái: $S_{t+1} = g(S_t, \text{action})$</li>
+                            <li class="fragment">Ứng dụng: Lưu lịch sử chat, bộ đếm request, kết quả API, file upload
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Giải thích cú pháp kiểm tra key trong session_state để tránh bị ghi đè dữ liệu.
+                </aside>
+            </section>
+
+            <!-- CONTENT SLIDE: Lựa chọn Công cụ UI Phù hợp -->
+            <section>
+                <h2>Lựa chọn Công cụ UI Phù hợp</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <h3 style="color: var(--amber);">Gradio &amp; Streamlit</h3>
+                        <ul>
+                            <li class="fragment"><strong>Gradio:</strong> Demo siêu tốc (3 dòng), test model nội bộ,
+                                share link 72h</li>
+                            <li class="fragment"><strong>Streamlit:</strong> Dựng Dashboard hoàn chỉnh, bố cục nhiều tab
+                                và lưu state</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <h3 style="color: var(--cyan);">Chuyên đề MCP + Stitch</h3>
+                        <ul>
+                            <li class="fragment">Khi có bản vẽ UI chi tiết và muốn tăng tốc dựng frontend</li>
+                            <li class="fragment">Để AI Agent đọc canvas qua MCP, tự sinh code Streamlit chuẩn xác</li>
+                        </ul>
+                        <div class="teacher-note">💡 Kết luận: Gradio thử nghiệm nhanh • Streamlit làm sản phẩm chính
+                            khóa.</div>
+                    </div>
+                </div>
+                <aside class="notes">Tổng kết phần 2: Phân định rõ phạm vi sử dụng của từng công cụ.</aside>
+            </section>
+
+            <!-- SECTION DIVIDER 03 -->
+            <section class="divider-slide">
+                <div class="index">03</div>
+                <div class="divider-title">
+                    <h2>Kết nối Streamlit với API Backend</h2>
+                    <p>Giao tiếp Client-Server qua HTTP POST &amp; Thư viện requests (40 phút)</p>
+                </div>
+                <aside class="notes">Bắt đầu Phần 3: Trọng tâm thực hành kết nối mạng Client-Server.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Vòng đời HTTP Request - Response -->
+            <section>
+                <h2>Vòng đời HTTP Request - Response</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><strong>Client (Streamlit):</strong> Đóng gói dữ liệu thành JSON và gửi
+                                HTTP Request</li>
+                            <li class="fragment"><strong>Server (FastAPI):</strong> Nhận request, validate schema, suy
+                                luận và gửi HTTP Response</li>
+                            <li class="fragment"><strong>Phương thức:</strong> <code>GET</code> (đọc dữ liệu),
+                                <code>POST</code> (gửi dữ liệu/payload lớn)</li>
+                            <li class="fragment"><strong>Mã trạng thái:</strong> <code>200 OK</code>,
+                                <code>400 Bad Request</code>, <code>422 Unprocessable</code>, <code>500 Error</code>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-req" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                                <marker id="arr-res" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--mint)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="25" width="85" height="110" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="52" y="50" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">CLIENT</text>
+                            <text x="52" y="66" font-size="8" text-anchor="middle" fill="var(--text)">(Streamlit)</text>
+                            <text x="52" y="90" font-size="7" text-anchor="middle" fill="var(--text-muted)">Tạo
+                                Payload</text>
+                            <text x="52" y="105" font-size="7" text-anchor="middle"
+                                fill="var(--text-muted)">requests.post</text>
+
+                            <rect x="245" y="25" width="85" height="110" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="287" y="50" font-size="10" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">SERVER</text>
+                            <text x="287" y="66" font-size="8" text-anchor="middle" fill="var(--text)">(FastAPI)</text>
+                            <text x="287" y="90" font-size="7" text-anchor="middle" fill="var(--text-muted)">Pydantic
+                                check</text>
+                            <text x="287" y="105" font-size="7" text-anchor="middle" fill="var(--text-muted)">Run
+                                Model</text>
+
+                            <line x1="97" y1="55" x2="238" y2="55" stroke="var(--cyan)" stroke-width="2"
+                                marker-end="url(#arr-req)"></line>
+                            <text x="168" y="47" font-size="8" text-anchor="middle" fill="var(--cyan)">HTTP POST
+                                /predict (JSON)</text>
+
+                            <line x1="245" y1="105" x2="104" y2="105" stroke="var(--mint)" stroke-width="2"
+                                marker-end="url(#arr-res)"></line>
+                            <text x="168" y="97" font-size="8" text-anchor="middle" fill="var(--mint)">HTTP 200 OK (JSON
+                                Result)</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Ôn tập nhanh vòng đời HTTP: Client gửi Request, Server trả Response.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Ánh xạ Dữ liệu &amp; Chuẩn hóa JSON -->
+            <section>
+                <h2>Ánh xạ Dữ liệu &amp; Chuẩn hóa JSON</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <p>$$ \mathcal{T}: \mathcal{X} \xrightarrow{\text{Request}} \mathcal{S}_{\text{JSON}}
+                            \xrightarrow{f_\theta} \mathcal{Y} \xrightarrow{\text{Response}} \mathcal{X}' $$</p>
+                        <ul>
+                            <li class="fragment">$\mathcal{S}_{\text{JSON}}$ chỉ chấp nhận kiểu dữ liệu nguyên thủy
+                                (String, Number, Array, Object)</li>
+                            <li class="fragment">Tensor PyTorch $\mathbf{T}$ hoặc NumPy <code>ndarray</code>
+                                <strong>không thể</strong> gửi trực tiếp</li>
+                            <li class="fragment">Bắt buộc chuyển sang <code>list</code> bằng <code>.tolist()</code> hoặc
+                                mã hóa Base64</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-ser" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="20" width="120" height="45" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--coral)" stroke-width="1.5"></rect>
+                            <text x="70" y="38" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--coral)">Tensor [B, C, H, W]</text>
+                            <text x="70" y="52" font-size="7" text-anchor="middle" fill="var(--text-muted)">Không thể
+                                nhét vào JSON!</text>
+
+                            <line x1="70" y1="67" x2="70" y2="85" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-ser)"></line>
+                            <text x="120" y="80" font-size="7" fill="var(--cyan)">.tolist() / Base64</text>
+
+                            <rect x="10" y="90" width="310" height="55" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="165" y="110" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">Chuẩn Hóa JSON Payload</text>
+                            <text x="165" y="125" font-size="8" text-anchor="middle" fill="var(--text-muted)">{ "text":
+                                "...", "features": [0.12, 0.45], "image_b64": "..." }</text>
+                            <text x="165" y="138" font-size="7" text-anchor="middle" fill="var(--mint)">✓ Gửi an toàn
+                                qua đường truyền mạng</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Sinh viên rất hay mắc lỗi nhét thẳng tensor PyTorch vào requests.post() gây
+                    crash.</div>
+                <aside class="notes">Lưu ý quan trọng về chuyển đổi kiểu dữ liệu trước khi gửi qua API.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Kiến trúc Backend FastAPI Cung cấp sẵn -->
+            <section>
+                <h2>Kiến trúc Backend FastAPI Cung cấp sẵn</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">File mẫu có sẵn: Học viên chạy độc lập tại cổng 8000</li>
+                            <li class="fragment">Lệnh chạy: <code>uvicorn backend_api:app --reload --port 8000</code>
+                            </li>
+                            <li class="fragment">Gồm 2 endpoint: <code>POST /predict</code> (JSON) và
+                                <code>GET /predict-stream</code> (SSE)</li>
+                            <li class="fragment">Kiểm tra qua Swagger UI: <code>http://localhost:8000/docs</code></li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-ep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="20" width="100" height="120" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--signal)" stroke-width="1.5"></rect>
+                            <text x="60" y="45" font-size="9" font-weight="600" text-anchor="middle"
+                                fill="var(--signal)">FastAPI Server</text>
+                            <text x="60" y="60" font-size="8" text-anchor="middle" fill="var(--text-muted)">Port
+                                8000</text>
+                            <text x="60" y="85" font-size="7" text-anchor="middle" fill="var(--cyan)">Uvicorn
+                                Worker</text>
+                            <text x="60" y="105" font-size="7" text-anchor="middle" fill="var(--mint)">Swagger at
+                                /docs</text>
+
+                            <rect x="150" y="25" width="170" height="42" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="235" y="43" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">POST /predict</text>
+                            <text x="235" y="56" font-size="7" text-anchor="middle" fill="var(--text-muted)">Dự đoán
+                                chuẩn JSON (Blocking)</text>
+                            <line x1="112" y1="46" x2="148" y2="46" stroke="var(--cyan)" stroke-width="1.5"
+                                marker-end="url(#arr-ep)"></line>
+
+                            <rect x="150" y="85" width="170" height="42" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="235" y="103" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">GET /predict-stream</text>
+                            <text x="235" y="116" font-size="7" text-anchor="middle" fill="var(--text-muted)">Streaming
+                                Response (Token by token)</text>
+                            <line x1="112" y1="106" x2="148" y2="106" stroke="var(--mint)" stroke-width="1.5"
+                                marker-end="url(#arr-ep)"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Hướng dẫn học viên mở Terminal riêng để giữ cho backend chạy liên tục.
+                </div>
+                <aside class="notes">Giới thiệu template backend có sẵn để tiết kiệm thời gian code lại API.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Backend Code: Pydantic Validation -->
+            <section>
+                <h2>Backend Code: Pydantic Validation</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">backend_api.py</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field
+
+class TextInferenceRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=500)
+
+class TextInferenceResponse(BaseModel):
+    status: str
+    original_text: str
+    predicted_label: str
+    confidence: float
+
+@app.post("/predict", response_model=TextInferenceResponse)
+def predict_endpoint(req: TextInferenceRequest):
+    label = "POSITIVE" if len(req.text) % 2 == 0 else "NEGATIVE"
+    return TextInferenceResponse(
+        status="success", original_text=req.text,
+        predicted_label=label, confidence=0.9425
+    )
+</code></pre>
+                            <div class="output">POST /predict ➔ 200 OK: {'status': 'success', 'predicted_label':
+                                'POSITIVE', ...}</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>TextInferenceRequest</code>: Tự động validate kiểu dữ liệu và
+                                chặn chuỗi rỗng</li>
+                            <li class="fragment">FastAPI tự động validate dữ liệu, trả lỗi <code>422</code> nếu sai
+                                schema</li>
+                            <li class="fragment"><code>response_model</code>: Chuẩn hóa dữ liệu trả về theo đúng định
+                                dạng định trước</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Phân tích backend để học viên thấy rõ schema của trường text cần gửi từ frontend.
+                </aside>
+            </section>
+
+            <!-- CODE SLIDE: Frontend: Khởi tạo &amp; Cấu hình Trang -->
+            <section>
+                <h2>Frontend: Khởi tạo &amp; Cấu hình Trang</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">frontend_app.py</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+import streamlit as st
+import requests, time
+
+# 1. Cấu hình trang (Bắt buộc là lệnh đầu tiên)
+st.set_page_config(
+    page_title="AI Visualizer - D24",
+    page_icon="🧠", layout="wide"
+)
+API_BASE_URL = "http://localhost:8000"
+
+# 2. Khởi tạo Session State
+if "history" not in st.session_state:
+    st.session_state.history = []
+if "request_count" not in st.session_state:
+    st.session_state.request_count = 0
+
+# 3. Tiêu đề và Tabs
+st.title("🚀 Hệ thống Giám sát Mô hình AI")
+tab_std, tab_str = st.tabs(["📦 Chuẩn JSON", "⚡ Streaming"])
+</code></pre>
+                            <div class="output">Khởi tạo thành công: Page config, Session State & Tabs</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>st.set_page_config</code>: Phải luôn là lệnh Streamlit đầu tiên
+                                trong file</li>
+                            <li class="fragment"><code>API_BASE_URL</code>: Khai báo tập trung địa chỉ máy chủ backend
+                            </li>
+                            <li class="fragment">Khởi tạo an toàn <code>history</code> và <code>request_count</code>
+                                trong session state</li>
+                            <li class="fragment"><code>st.tabs</code>: Phân chia 2 luồng tính năng độc lập, mạch lạc
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Bắt đầu viết code frontend_app.py. Lưu ý vị trí của set_page_config.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Frontend: Gửi Request qua Thư viện requests -->
+            <section>
+                <h2>Frontend: Gửi Request qua Thư viện requests</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">frontend_app.py (Tab 1)</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+with tab_std:
+    input_text = st.text_area("Nhập câu cần phân tích:")
+    if st.button("Gửi dự đoán lên API", type="primary"):
+        if not input_text.strip():
+            st.warning("⚠️ Vui lòng nhập nội dung!")
+        else:
+            try:
+                start = time.time()
+                payload = {"text": input_text.strip()}
+                resp = requests.post(
+                    f"{API_BASE_URL}/predict",
+                    json=payload,
+                    timeout=5.0
+                )
+                latency = (time.time() - start) * 1000
+                # Bóc tách kết quả ở slide tiếp theo
+            except requests.exceptions.ConnectionError:
+                st.error("🚨 Không thể kết nối tới Backend!")
+</code></pre>
+                            <div class="output">Sending POST to http://localhost:8000/predict with timeout=5.0s</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>json=payload</code>: Tự động encode JSON và gắn header
+                                <code>application/json</code></li>
+                            <li class="fragment"><code>timeout=5.0</code>: Nguyên tắc an toàn bắt buộc để tránh treo UI
+                                khi mất mạng</li>
+                            <li class="fragment">Đo đạc <code>latency</code> bằng mili-giây để đánh giá hiệu năng API
+                            </li>
+                            <li class="fragment">Bắt ngoại lệ <code>ConnectionError</code> để hiển thị thông báo lỗi
+                                thân thiện</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Nhấn mạnh timeout và try/except để ứng dụng không bị đơ khi backend gặp sự cố.
+                </aside>
+            </section>
+
+            <!-- CODE SLIDE: Frontend: Xử lý Response &amp; Hiển thị Metric -->
+            <section>
+                <h2>Frontend: Xử lý Response &amp; Hiển thị Metric</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">frontend_app.py (Render)</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+if resp.status_code == 200:
+    data = resp.json()
+    st.session_state.request_count += 1
+    st.success("✅ Nhận phản hồi thành công từ API!")
+    
+    # Hiển thị số liệu dạng 3 cột
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Nhãn dự đoán", data["predicted_label"])
+    col2.metric("Độ tin cậy", f"{data['confidence']:.2%}")
+    col3.metric("Độ trễ API", f"{latency:.1f} ms")
+else:
+    st.error(f"❌ Máy chủ trả về mã lỗi {resp.status_code}: {resp.text}")
+</code></pre>
+                            <div class="output">Nhãn: POSITIVE | Độ tin cậy: 94.25% | Độ trễ: 12.4 ms</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Kiểm tra mã phản hồi HTTP <code>200 OK</code> trước khi bóc tách dữ
+                                liệu</li>
+                            <li class="fragment"><code>resp.json()</code>: Giải mã chuỗi JSON thành Python Dictionary
+                            </li>
+                            <li class="fragment"><code>st.columns(3)</code>: Tạo bố cục 3 cột trực quan, cân đối</li>
+                            <li class="fragment"><code>col.metric</code>: Widget chuyên dụng trình bày KPI và thông số
+                                mô hình</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Sử dụng st.columns và col.metric để giao diện chuyên nghiệp hơn st.write.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Frontend: Lưu Lịch sử &amp; Hiển thị Bảng -->
+            <section>
+                <h2>Frontend: Lưu Lịch sử &amp; Hiển thị Bảng</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">frontend_app.py (History)</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+# 1. Lưu bản ghi vào session state
+st.session_state.history.append({
+    "loai": "Chuan JSON",
+    "van_ban": input_text,
+    "du_doan": data["predicted_label"],
+    "thoi_gian": time.strftime("%H:%M:%S")
+})
+
+# 2. Hiển thị bảng lịch sử ở cuối trang
+if st.session_state.history:
+    st.write("---")
+    st.subheader("📜 Lịch sử các lần suy luận trong phiên")
+    st.dataframe(st.session_state.history, use_container_width=True)
+</code></pre>
+                            <div class="output">st.dataframe: 1 bản ghi mới được cập nhật vào bảng</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Mỗi lần dự đoán thành công: Thêm một bản ghi vào
+                                <code>st.session_state.history</code></li>
+                            <li class="fragment">Dữ liệu được bảo toàn nguyên vẹn qua mọi lần rerun của người dùng</li>
+                            <li class="fragment"><code>st.dataframe</code>: Tự động hỗ trợ sắp xếp cột, tìm kiếm và cuộn
+                                dữ liệu</li>
+                            <li class="fragment"><code>use_container_width=True</code>: Kéo giãn bảng full chiều rộng
+                                màn hình</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Minh họa cách tái sử dụng session_state để render bảng lịch sử ở cuối trang.
+                </aside>
+            </section>
+
+            <!-- SECTION DIVIDER 04 -->
+            <section class="divider-slide">
+                <div class="index">04</div>
+                <div class="divider-title">
+                    <h2>Streaming Data từ API lên Streamlit</h2>
+                    <p>Truyền nhận dữ liệu thời gian thực cho Generative AI &amp; st.write_stream (10 phút)</p>
+                </div>
+                <aside class="notes">Bắt đầu Phần 4: Kỹ thuật HTTP Streaming và hiệu ứng gõ chữ thời gian thực.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Tại sao cần HTTP Streaming trong AI? -->
+            <section>
+                <h2>Tại sao cần HTTP Streaming trong AI?</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <p>$$ T_{\text{total}} = T_{\text{prefill}} + \sum_{i=1}^{M} t_{\text{decode}}^{(i)} $$</p>
+                        <ul>
+                            <li class="fragment">Mô hình LLM sinh $M$ token có thể mất từ 10 đến 30 giây</li>
+                            <li class="fragment"><strong>Blocking:</strong> Chờ sinh xong mới gửi, TTFB bằng
+                                $T_{\text{total}}$ gây trễ</li>
+                            <li class="fragment"><strong>Cơ chế Streaming:</strong> Sinh được token nào đẩy ngay qua
+                                socket về Client</li>
+                            <li class="fragment">TTFB giảm xuống chỉ còn $\sim 200\text{ms}$ ➔ Trải nghiệm gõ chữ mượt
+                                mà</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="20" width="320" height="50" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--coral)" stroke-width="1"></rect>
+                            <text x="25" y="40" font-size="9" font-weight="600" fill="var(--coral)">BLOCKING (Truyền
+                                thống)</text>
+                            <text x="25" y="55" font-size="7" fill="var(--text-muted)">Chờ 10-20s (TTFB rất lớn) ➔ Màn
+                                hình loading xoay tròn ➔ Phụt ra cả đoạn</text>
+                            <rect x="250" y="32" width="65" height="24" rx="4" fill="var(--bg)" stroke="var(--coral)"
+                                stroke-width="1"></rect>
+                            <text x="282" y="48" font-size="8" text-anchor="middle" fill="var(--coral)">TTFB:
+                                15.0s</text>
+
+                            <rect x="10" y="85" width="320" height="60" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="25" y="105" font-size="9" font-weight="600" fill="var(--mint)">STREAMING (Chunked
+                                Transfer)</text>
+                            <text x="25" y="120" font-size="7" fill="var(--text-muted)">Sinh token nào đẩy ngay qua
+                                socket ➔ Chữ chạy từng từ (Typing effect)</text>
+                            <text x="25" y="134" font-size="7" fill="var(--mint)">✓ Phản hồi tức thì như ChatGPT</text>
+                            <rect x="250" y="100" width="65" height="24" rx="4" fill="var(--bg)" stroke="var(--mint)"
+                                stroke-width="1"></rect>
+                            <text x="282" y="116" font-size="8" text-anchor="middle" fill="var(--mint)">TTFB:
+                                0.2s</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Phân tích công thức độ trễ và tại sao TTFB (Time to first byte) lại là chỉ số vàng
+                    trong Generative AI.</aside>
+            </section>
+
+            <!-- DIAGRAM SLIDE: Nguyên lý: HTTP Chunked Transfer -->
+            <section>
+                <h2>Nguyên lý: HTTP Chunked Transfer</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Sử dụng header HTTP <code>Transfer-Encoding: chunked</code></li>
+                            <li class="fragment">Không cần biết trước tổng kích thước dữ liệu
+                                (<code>Content-Length</code>)</li>
+                            <li class="fragment">Kết nối TCP được giữ mở liên tục giữa FastAPI và Streamlit</li>
+                            <li class="fragment">Máy chủ liên tục đẩy từng mẩu byte qua socket ngay khi generator yield
+                            </li>
+                            <li class="fragment">Client giải mã từng chunk unicode và hiển thị ngay tức thì</li>
+                        </ul>
+                    </div>
+                    <div class="col diagram-panel">
+                        <svg viewBox="0 0 340 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-ck" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                                    markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan)"></path>
+                                </marker>
+                            </defs>
+                            <rect x="10" y="30" width="80" height="90" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--mint)" stroke-width="1.5"></rect>
+                            <text x="50" y="60" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--mint)">FastAPI</text>
+                            <text x="50" y="75" font-size="7" text-anchor="middle" fill="var(--text-muted)">Async
+                                Generator</text>
+                            <text x="50" y="90" font-size="7" text-anchor="middle" fill="var(--amber)">yield
+                                token</text>
+
+                            <rect x="250" y="30" width="80" height="90" rx="6" fill="var(--bg-panel-2)"
+                                stroke="var(--cyan)" stroke-width="1.5"></rect>
+                            <text x="290" y="60" font-size="8" font-weight="600" text-anchor="middle"
+                                fill="var(--cyan)">Streamlit</text>
+                            <text x="290" y="75" font-size="7" text-anchor="middle"
+                                fill="var(--text-muted)">iter_content</text>
+                            <text x="290" y="90" font-size="7" text-anchor="middle"
+                                fill="var(--mint)">write_stream</text>
+
+                            <line x1="92" y1="75" x2="246" y2="75" stroke="var(--line)" stroke-width="2"></line>
+                            <rect x="110" y="63" width="32" height="22" rx="3" fill="var(--bg-panel)"
+                                stroke="var(--cyan)" stroke-width="1"></rect>
+                            <text x="126" y="77" font-size="7" text-anchor="middle" fill="var(--cyan)">t1</text>
+                            <rect x="155" y="63" width="32" height="22" rx="3" fill="var(--bg-panel)"
+                                stroke="var(--signal)" stroke-width="1"></rect>
+                            <text x="171" y="77" font-size="7" text-anchor="middle" fill="var(--signal)">t2</text>
+                            <rect x="200" y="63" width="32" height="22" rx="3" fill="var(--bg-panel)"
+                                stroke="var(--mint)" stroke-width="1"></rect>
+                            <text x="216" y="77" font-size="7" text-anchor="middle" fill="var(--mint)">t3</text>
+
+                            <text x="170" y="115" font-size="8" text-anchor="middle"
+                                fill="var(--text-muted)">Transfer-Encoding: chunked (Duy trì socket mở)</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">Cơ chế kỹ thuật đằng sau HTTP Streaming và Server-Sent Events.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Backend: Async Generator &amp; StreamingResponse -->
+            <section>
+                <h2>Backend: Async Generator &amp; StreamingResponse</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">backend_api.py (Streaming)</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+import asyncio
+from fastapi.responses import StreamingResponse
+
+async def mock_token_stream(prompt: str):
+    tokens = ["Xin", "chào", "team", "AI", "D24!",
+              "Mô", "hình", "đang", "suy", "luận..."]
+    for token in tokens:
+        await asyncio.sleep(0.15)  # Giả lập GPU 150ms
+        yield f"{token} "
+
+@app.get("/predict-stream")
+async def stream_endpoint(text: str):
+    return StreamingResponse(
+        mock_token_stream(text),
+        media_type="text/plain"
+    )
+</code></pre>
+                            <div class="output">StreamingResponse: text/plain stream open on socket</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>async def</code> kết hợp <code>yield</code>: Tạo ra
+                                AsyncGenerator trong Python</li>
+                            <li class="fragment"><code>await asyncio.sleep(0.15)</code>: Nhường quyền cho Event Loop,
+                                không block server</li>
+                            <li class="fragment"><code>StreamingResponse</code>: Giữ kết nối mở và ghi dữ liệu
+                                text/plain liên tục</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="teacher-note">💡 Luôn dùng await asyncio.sleep thay vì time.sleep để không làm treo luồng
+                    uvicorn.</div>
+                <aside class="notes">Hướng dẫn học viên cách viết endpoint streaming với FastAPI.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Frontend: Đọc Luồng Byte với Thư viện requests -->
+            <section>
+                <h2>Frontend: Đọc Luồng Byte với Thư viện requests</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">frontend_app.py (Consumer)</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+def client_stream_consumer():
+    """Generator đọc từng chunk byte từ HTTP stream."""
+    with requests.get(
+        f"{API_BASE_URL}/predict-stream",
+        params={"text": prompt.strip()},
+        stream=True,  # QUAN TRỌNG: Giữ socket mở
+        timeout=10.0
+    ) as stream_resp:
+        if stream_resp.status_code == 200:
+            for chunk in stream_resp.iter_content(
+                chunk_size=None, decode_unicode=True
+            ):
+                if chunk:
+                    yield chunk
+        else:
+            yield f"Lỗi máy chủ: {stream_resp.status_code}"
+</code></pre>
+                            <div class="output">Yielding chunks from network socket in real-time...</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment">Cờ <code>stream=True</code>: Bắt buộc, báo requests không tải toàn bộ
+                                body về RAM</li>
+                            <li class="fragment"><code>stream_resp.iter_content()</code>: Lắng nghe socket và giải mã
+                                từng chunk unicode</li>
+                            <li class="fragment">Hàm này trở thành một Python Generator hoàn chỉnh phía Client</li>
+                            <li class="fragment">Bảo đảm đóng socket an toàn sau khi đọc xong nhờ context manager
+                                <code>with</code></li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Lưu ý then chốt: Quên stream=True sẽ làm mất hiệu ứng streaming.</aside>
+            </section>
+
+            <!-- CODE SLIDE: Frontend: Render Luồng với `st.write_stream` -->
+            <section>
+                <h2>Frontend: Render Luồng với `st.write_stream`</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <div class="terminal">
+                            <div class="terminal-bar">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="terminal-label">frontend_app.py (Tab 2)</span>
+                            </div>
+                            <pre><code class="language-python" data-trim data-noescape>
+with tab_str:
+    st.subheader("Trải nghiệm Sinh dữ liệu dạng Luồng")
+    prompt = st.text_input("Nhập chủ đề cần AI sinh văn bản:")
+    
+    if st.button("Khởi động Luồng Stream"):
+        if not prompt.strip():
+            st.warning("⚠️ Vui lòng nhập chủ đề!")
+        else:
+            st.write("---")
+            st.markdown("#### 💬 Phản hồi trực tiếp từ Mô hình:")
+            
+            # st.write_stream tự động render hiệu ứng gõ chữ
+            st.write_stream(client_stream_consumer)
+</code></pre>
+                            <div class="output">Xin chào team AI D24! Mô hình đang phân tích... ▍</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><code>st.write_stream</code>: Tiện ích đỉnh cao từ Streamlit 1.31+</li>
+                            <li class="fragment">Tiếp nhận trực tiếp generator và cập nhật DOM theo thời gian thực</li>
+                            <li class="fragment">Tạo hiệu ứng gõ chữ (typing effect) mượt mà không làm rerun trang</li>
+                            <li class="fragment">Tự động render Markdown hoàn chỉnh ngay sau khi nhận xong luồng</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Cho học viên bấm nút chạy thử để xem hiệu ứng gõ chữ thực tế.</aside>
+            </section>
+
+            <!-- SECTION DIVIDER 05 -->
+            <section class="divider-slide">
+                <div class="index">05</div>
+                <div class="divider-title">
+                    <h2>Lỗi Thường Gặp, Tổng Kết &amp; Bài Tập</h2>
+                    <p>Tránh cạm bẫy thực tế, đúc kết kiến thức &amp; Bài tập về nhà (10 phút)</p>
+                </div>
+                <aside class="notes">Bắt đầu Phần 5: Tổng kết bài giảng, điểm qua các lỗi hay gặp và giao bài tập về
+                    nhà.</aside>
+            </section>
+
+            <!-- PITFALLS SLIDE: Lỗi 1: Nhầm Biến thường &amp; Session State -->
+            <section>
+                <h2>Lỗi 1: Nhầm Biến thường &amp; Session State</h2>
+                <div class="pitfall-row">
+                    <span class="tag">LỖI</span>
+                    <p>Khai báo biến lưu kết quả dạng biến thường: <code>results = []</code>. Khi người dùng thao tác ở
+                        ô nhập khác, toàn bộ kết quả cũ biến mất không dấu vết do Streamlit rerun từ đầu.</p>
+                </div>
+                <div class="pitfall-row fix">
+                    <span class="tag">SỬA</span>
+                    <p>Luôn lưu dữ liệu vào <code>st.session_state["results"]</code>. Kiểm tra
+                        <code>if "results" not in st.session_state:</code> trước khi gán giá trị mặc định.</p>
+                </div>
+                <div class="teacher-note">💡 Hãy nhớ: Coi session_state như chiếc két sắt bảo toàn dữ liệu qua các chu
+                    kỳ rerun.</div>
+                <aside class="notes">Nhắc lại lỗi số 1 của người mới học Streamlit.</aside>
+            </section>
+
+            <!-- PITFALLS SLIDE: Lỗi 2: Mất Kết Nối Tới API Backend -->
+            <section>
+                <h2>Lỗi 2: Mất Kết Nối Tới API Backend</h2>
+                <div class="pitfall-row">
+                    <span class="tag">LỖI</span>
+                    <p>Bấm nút trên giao diện Streamlit bị báo lỗi đỏ:
+                        <code>requests.exceptions.ConnectionError: [Errno 111] Connection refused</code>.</p>
+                </div>
+                <div class="pitfall-row fix">
+                    <span class="tag">SỬA</span>
+                    <p>1. Quên chưa khởi động FastAPI bằng lệnh <code>uvicorn backend_api:app --port 8000</code>.<br>2.
+                        Nhầm lẫn cổng kết nối: Gõ nhầm cổng 8501 của Streamlit thay vì cổng 8000 của FastAPI. Kiểm tra
+                        <code>http://localhost:8000/docs</code> trước.</p>
+                </div>
+                <aside class="notes">Nhắc học viên kiểm tra kỹ cổng và terminal uvicorn.</aside>
+            </section>
+
+            <!-- PITFALLS SLIDE: Lỗi 3: Lỗi Schema 422 từ Pydantic -->
+            <section>
+                <h2>Lỗi 3: Lỗi Schema 422 từ Pydantic</h2>
+                <div class="pitfall-row">
+                    <span class="tag">LỖI</span>
+                    <p>API trả về mã lỗi 422: <code>{"detail":[{"loc":["body","text"],"msg":"field required"}]}</code>
+                        dù đã có gửi dữ liệu lên.</p>
+                </div>
+                <div class="pitfall-row fix">
+                    <span class="tag">SỬA</span>
+                    <p>So khớp chính xác 100% tên khóa (keys) giữa Pydantic Model (<code>text: str</code>) và payload
+                        JSON gửi đi trong <code>requests.post(json={"text": input})</code>. Tránh nhầm với
+                        <code>"content"</code> hay <code>"input_text"</code>.</p>
+                </div>
+                <aside class="notes">Lỗi 422 thường do lệch tên trường giữa frontend và backend.</aside>
+            </section>
+
+            <!-- PITFALLS SLIDE: Lỗi 4: Mất Hiệu Ứng Typing Khi Streaming -->
+            <section>
+                <h2>Lỗi 4: Mất Hiệu Ứng Typing Khi Streaming</h2>
+                <div class="pitfall-row">
+                    <span class="tag">LỖI</span>
+                    <p>Dù backend dùng StreamingResponse nhưng Streamlit vẫn đợi 10 giây rồi phụt ra cả đoạn văn bản
+                        cùng một lúc.</p>
+                </div>
+                <div class="pitfall-row fix">
+                    <span class="tag">SỬA</span>
+                    <p>1. Đảm bảo bật cờ <code>stream=True</code> trong hàm <code>requests.get()</code>.<br>2. Truyền
+                        trực tiếp hàm Generator vào <code>st.write_stream</code> thay vì truyền chuỗi tĩnh
+                        <code>resp.text</code>.</p>
+                </div>
+                <aside class="notes">Điểm mấu chốt để st.write_stream hoạt động là phải có stream=True và generator
+                    yield.</aside>
+            </section>
+
+            <!-- OBJECTIVES SLIDE -->
+            <section>
+                <h2>Tổng kết 5 Điểm Cốt lõi</h2>
+                <ul class="objectives">
+                    <li class="fragment"><strong>Mock Function:</strong> Giả lập output thông luồng trước khi cắm AI
+                        nặng</li>
+                    <li class="fragment"><strong>Decoupling:</strong> Tách biệt rạch ròi trách nhiệm giữa UI và Backend
+                        API</li>
+                    <li class="fragment"><strong>MCP + Stitch:</strong> Chuẩn mở giúp AI Agent tự sinh UI từ thiết kế
+                    </li>
+                    <li class="fragment"><strong>Top-to-Bottom:</strong> Dùng <code>st.session_state</code> bảo toàn dữ
+                        liệu khi rerun</li>
+                    <li class="fragment"><strong>HTTP Streaming:</strong> Tối ưu hóa TTFB cho GenAI với
+                        <code>st.write_stream</code></li>
+                </ul>
+                <aside class="notes">Hệ thống hóa toàn bộ nội dung của buổi học.</aside>
+            </section>
+
+            <!-- CONTENT SLIDE: Bài tập về nhà: AI Classifier Web App -->
+            <section>
+                <h2>Bài tập về nhà: AI Classifier Web App</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <h3 style="color: var(--cyan);">Yêu cầu Kỹ thuật</h3>
+                        <ul>
+                            <li class="fragment">Viết Mock Model phân loại ảnh chó/mèo kèm xác suất</li>
+                            <li class="fragment">FastAPI: Endpoint nhận file upload qua <code>UploadFile</code></li>
+                            <li class="fragment">Streamlit: Upload ảnh, preview và lưu lịch sử vào session</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <h3 style="color: var(--amber);">Quy định Nộp bài</h3>
+                        <ul>
+                            <li class="fragment">Đẩy mã nguồn lên GitHub kèm hướng dẫn trong <code>README.md</code></li>
+                            <li class="fragment"><strong>Thời hạn nộp:</strong> Trước buổi học tiếp theo</li>
+                        </ul>
+                        <div class="teacher-note">💡 Gợi ý: Đọc file ảnh dưới dạng bytes và gửi qua
+                            <code>requests.post(files=...)</code>.</div>
+                    </div>
+                </div>
+                <aside class="notes">Giao bài tập về nhà và giải thích các bước thực hiện.</aside>
+            </section>
+
+            <!-- CONTENT SLIDE: Tài liệu Tham khảo &amp; Đọc thêm -->
+            <section>
+                <h2>Tài liệu Tham khảo &amp; Đọc thêm</h2>
+                <div class="two-col divided">
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><a href="https://docs.streamlit.io/get-started"
+                                    target="_blank">Streamlit Docs</a> — Cài đặt và widget cơ bản</li>
+                            <li class="fragment"><a href="https://www.gradio.app/guides/quickstart"
+                                    target="_blank">Gradio Guide</a> — Bọc hàm nhanh với <code>gr.Interface</code></li>
+                            <li class="fragment"><a href="https://realpython.com/python-requests/"
+                                    target="_blank">Python Requests</a> — Giao thức HTTP và JSON</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li class="fragment"><a href="https://fastapi.tiangolo.com/tutorial/first-steps/"
+                                    target="_blank">FastAPI Guide</a> — REST API hiệu năng cao</li>
+                            <li class="fragment"><a href="https://modelcontextprotocol.io/" target="_blank">MCP
+                                    Protocol</a> — Đặc tả kỹ thuật chính thức</li>
+                            <li class="fragment"><a href="https://stitch.withgoogle.com/" target="_blank">Google
+                                    Stitch</a> &amp; tài liệu tại <a href="reading_list.md">reading_list.md</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">Tài nguyên để học viên tự học thêm sau buổi học.</aside>
+            </section>
+
+            <!-- TITLE SLIDE -->
+            <section class="title-slide">
+                <p class="eyebrow">Khóa AI D24 — ProPTIT</p>
+                <h1>Q&amp;A — Hỏi đáp</h1>
+                <p style="font-size: 1.1em; color: var(--cyan); margin-top: -8px; font-weight: 500;">Giải đáp thắc mắc
+                    &amp; Thảo luận đồ án</p>
+                <hr class="rule">
+                <p class="presenter">Cảm ơn các bạn học viên D24 đã chú ý lắng nghe! • Chúc các bạn làm bài tập tốt!</p>
+                <aside class="notes">Dành 10 phút cuối giờ để giải đáp toàn bộ thắc mắc của học viên về MCP, Streamlit
+                    và kết nối API.</aside>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.js"></script>
+
+    <script>
+        Reveal.initialize({
+            width: 1280,
+            height: 720,
+            margin: 0.04,
+            minScale: 0.2,
+            maxScale: 2.0,
+            hash: true,
+            slideNumber: 'c/t',
+            transition: 'slide',
+            plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+        });
+    </script>
+</body>
+
+</html>

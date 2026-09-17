@@ -1,0 +1,17 @@
+# Thư viện phục vụ bài giảng Buổi 06: Interface Programming & API Integration
+# Đề tài: Hệ thống AI Phân tích & Phản hồi Đánh giá Khách hàng
+
+# Web Frameworks cho Giao diện AI (Frontend UI)
+streamlit>=1.31.0
+gradio>=4.20.0
+
+# Backend API & Server Engine
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+
+# HTTP Client cho tích hợp API
+requests>=2.31.0
+
+# Xử lý dữ liệu & Bảng thống kê
+pandas>=2.0.0

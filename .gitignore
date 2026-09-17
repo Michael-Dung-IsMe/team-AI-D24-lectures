@@ -1,0 +1,8 @@
+.venv/
+.vscode/
+archives/
+__pycache__/
+
+lesson_*_plan.md
+skills/
+*solution.*

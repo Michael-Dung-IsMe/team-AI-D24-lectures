@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Toàn Cảnh Pipeline Data Crawling & MongoDB - Team AI D24</title>
+  
+  <!-- KaTeX for crisp mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --bg-card: rgba(30, 41, 59, 0.75);
+      --border-color: #475569;
+      --border-subtle: #334155;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --accent-cyan: #06b6d4;
+      --accent-cyan-glow: rgba(6, 182, 212, 0.25);
+      --accent-emerald: #10b981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+      --accent-amber: #f59e0b;
+      --accent-amber-glow: rgba(245, 158, 11, 0.25);
+      --accent-rose: #f43f5e;
+      --accent-violet: #8b5cf6;
+      --accent-blue: #3b82f6;
+
+      --code-bg: #090d16;
+      --terminal-bg: #020617;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e2e8f0;
+      --bg-card: rgba(255, 255, 255, 0.85);
+      --border-color: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      
+      --code-bg: #f1f5f9;
+      --terminal-bg: #0f172a;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 16px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-badge {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-cyan);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: #38bdf8;
+      color: #ffffff;
+    }
+
+    button.primary:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 0 12px var(--accent-cyan-glow);
+    }
+
+    button.success {
+      background: linear-gradient(135deg, #059669, #047857);
+      border-color: #34d399;
+      color: #ffffff;
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      border-color: #fb7185;
+      color: #ffffff;
+    }
+
+    /* Strategy Selection Banner */
+    .strategy-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .strategy-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .strategy-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+
+    .strategy-card.active {
+      border-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.08);
+      box-shadow: 0 0 16px var(--accent-cyan-glow);
+    }
+
+    .strategy-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .strategy-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .strategy-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .badge-static { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-dynamic { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .badge-api { background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid #8b5cf6; }
+
+    .strategy-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .strategy-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+    }
+
+    .strategy-stats span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Simulation Control Toolbar */
+    .controls-toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .slider-val {
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      font-weight: 700;
+      min-width: 36px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent-cyan);
+    }
+
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .toggle-pill.active {
+      border-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    /* Main Visualizer Area */
+    .visualizer-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .canvas-container {
+      width: 100%;
+      height: 380px;
+      position: relative;
+      background: radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .canvas-overlay-legend {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      pointer-events: none;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Detail / Inspection Tabs */
+    .tabs-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tabs-header {
+      display: flex;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      padding: 12px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.05);
+    }
+
+    .tab-content {
+      padding: 16px;
+      min-height: 280px;
+      max-height: 480px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Terminal Console */
+    .terminal-window {
+      background: var(--terminal-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 12px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .terminal-line {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      word-break: break-all;
+    }
+
+    .terminal-time {
+      color: var(--text-dim);
+      user-select: none;
+      min-width: 65px;
+    }
+
+    .log-info { color: #38bdf8; }
+    .log-success { color: #4ade80; }
+    .log-warn { color: #fbbf24; }
+    .log-error { color: #f43f5e; }
+    .log-db { color: #a78bfa; }
+
+    /* MongoDB Data Table */
+    .mongo-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    table.styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      text-align: left;
+    }
+
+    table.styled-table th {
+      background: var(--bg-secondary);
+      padding: 10px 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    table.styled-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    table.styled-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .pill-insert { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .pill-update { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+
+    /* Aggregation Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-metric-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+    }
+
+    .stat-metric-card .title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-metric-card .value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* Comparison Matrix */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
+    }
+
+    .compare-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .compare-card h4 {
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      overflow-x: auto;
+      color: #cbd5e1;
+      white-space: pre;
+    }
+
+    /* Math Lab */
+    .math-lab-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .formula-display {
+      background: var(--code-bg);
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      border: 1px solid var(--border-subtle);
+      font-size: 1.1rem;
+    }
+
+    .math-calculator {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body { padding: 8px; }
+      .container { gap: 10px; }
+      header { padding: 12px; }
+      .canvas-container { height: 320px; }
+      .controls-toolbar { flex-direction: column; align-items: stretch; }
+      .control-group { justify-content: space-between; }
+      .tab-content { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Header Bar -->
+  <header>
+    <div class="header-title">
+      <span class="header-badge">ProPTIT AI D24</span>
+      <div>
+        <h1>Interactive Crawling & NoSQL Pipeline Visualizer</h1>
+        <div class="header-subtitle">Mô phỏng trực quan luồng cào dữ liệu (3 chiến lược), Anti-bot, MongoDB Upsert & Cầu nối AI</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="themeToggleBtn" title="Chuyển đổi sáng/tối">🌓 Theme</button>
+      <button id="guideBtn" title="Hướng dẫn sử dụng">💡 Hướng dẫn</button>
+    </div>
+  </header>
+
+  <!-- 3 Strategies Selector -->
+  <div class="strategy-bar">
+    <!-- Option 1: Static -->
+    <div class="strategy-card active" id="strat-static" data-strategy="static">
+      <div class="strategy-card-header">
+        <div class="strategy-title">
+          <span>🟢</span> Option 1: Static Scraping
+        </div>
+        <span class="strategy-badge badge-static">BS4 + requests</span>
+      </div>
+      <div class="strategy-desc">Tải HTML tĩnh từ Web Server & parse cây DOM bằng lxml. Siêu nhẹ, chỉ phù hợp trang tĩnh không cần render JS.</div>
+      <div class="strategy-stats">
+        <span>⚡ Tốc độ: <b>~150ms</b></span>
+        <span>🧠 RAM: <b>~15 MB</b></span>
+        <span>💻 CPU: <b>~5%</b></span>
+      </div>
+    </div>
+
+    <!-- Option 2: Dynamic -->
+    <div class="strategy-card" id="strat-dynamic" data-strategy="dynamic">
+      <div class="strategy-card-header">
+        <div class="strategy-title">
+          <span>🟠</span> Option 2: Dynamic Scraping
+        </div>
+        <span class="strategy-badge badge-dynamic">Playwright Chromium</span>
+      </div>
+      <div class="strategy-desc">Chạy trình duyệt Chromium ngầm (Headless), thực thi JavaScript, cuộn trang vô hạn và auto-wait selector.</div>
+      <div class="strategy-stats">
+        <span>⚡ Tốc độ: <b>~2200ms</b></span>
+        <span>🧠 RAM: <b>~250 MB</b></span>
+        <span>💻 CPU: <b>~45%</b></span>
+      </div>
+    </div>
+
+    <!-- Option 3: API Sniffing -->
+    <div class="strategy-card" id="strat-api" data-strategy="api">
+      <div class="strategy-card-header">
+        <div class="strategy-title">
+          <span>⚡</span> Option 3: API Sniffing
+        </div>
+        <span class="strategy-badge badge-api">DevTools Fetch/XHR</span>
+      </div>
+      <div class="strategy-desc">"Tuyệt chiêu tối thượng": Soi F12 Network bắt trực tiếp API ngầm trả JSON thuần. Tốc độ cực hạn, không cần bóc tách DOM!</div>
+      <div class="strategy-stats">
+        <span>⚡ Tốc độ: <b>~40ms</b></span>
+        <span>🧠 RAM: <b>~8 MB</b></span>
+        <span>💻 CPU: <b>~2%</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Controls Toolbar -->
+  <div class="controls-toolbar">
+    <div class="control-group">
+      <button class="primary" id="playPauseBtn">▶ Chạy tự động (Play)</button>
+      <button id="stepBtn">⏭ Bước tiếp (Step)</button>
+      <button class="danger" id="resetBtn">🔄 Đặt lại (Reset DB)</button>
+    </div>
+
+    <div class="control-group">
+      <!-- Speed Slider -->
+      <div class="slider-container">
+        <label for="speedSlider">Tốc độ:</label>
+        <input type="range" id="speedSlider" min="0.5" max="3" step="0.5" value="1">
+        <span class="slider-val" id="speedVal">1.0x</span>
+      </div>
+
+      <!-- Polite Crawl Delay Slider -->
+      <div class="slider-container">
+        <label for="delaySlider">Polite Delay:</label>
+        <input type="range" id="delaySlider" min="0.5" max="3.0" step="0.5" value="1.0">
+        <span class="slider-val" id="delayVal">1.0s</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <!-- Anti-bot Rate Limit Toggle -->
+      <div class="toggle-pill" id="wafToggle" title="Mô phỏng máy chủ chặn 429 và kích hoạt Exponential Backoff">
+        🛡️ Chặn 429 (Backoff)
+      </div>
+      
+      <!-- Upsert Pass 2 Demo Toggle -->
+      <div class="toggle-pill" id="upsertToggle" title="Chạy lần 2 với giá giảm để kiểm chứng Upsert cập nhật mà không duplicate">
+        🔄 Lần Cào 2 (Test Upsert)
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Visual Canvas Area -->
+  <div class="visualizer-wrapper">
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="pipelineCanvas"></canvas>
+      <div class="canvas-overlay-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#38bdf8;"></div><span>HTTP GET Request / Packet</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div><span>Raw HTML / DOM / Clean BSON</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa;"></div><span>MongoDB Document (Upsert)</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div><span>WAF Rate Limit (429 Backoff)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Tabs Section -->
+  <div class="tabs-card">
+    <div class="tabs-header">
+      <button class="tab-btn active" data-tab="tab-terminal">🖥️ Terminal Console</button>
+      <button class="tab-btn" data-tab="tab-mongo">🍃 MongoDB Live Collection (<span id="docCountBadge">0</span>)</button>
+      <button class="tab-btn" data-tab="tab-ai">📊 Aggregation & Pandas AI Bridge</button>
+      <button class="tab-btn" data-tab="tab-comparison">⚖️ So Sánh Kỹ Thuật & Code Python</button>
+      <button class="tab-btn" data-tab="tab-math">📐 Anti-bot & Index Math Lab</button>
+    </div>
+
+    <!-- Tab 1: Terminal Log -->
+    <div class="tab-content active" id="tab-terminal">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">LOG TIẾN TRÌNH PYTHON THỰC TẾ (REQUESTS / PLAYWRIGHT / PYMONGO):</span>
+        <button id="clearLogBtn" style="padding:2px 8px; font-size:0.75rem;">Xóa Log</button>
+      </div>
+      <div class="terminal-window" id="terminalLog">
+        <div class="terminal-line">
+          <span class="terminal-time">[00:00:00]</span>
+          <span class="log-info">[*] Khởi tạo môi trường mô phỏng Crawling AI Pipeline... Sẵn sàng.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: MongoDB Live Collection -->
+    <div class="tab-content" id="tab-mongo">
+      <div class="stats-grid">
+        <div class="stat-metric-card">
+          <div class="title">Database & Collection</div>
+          <div class="value" style="font-size:1.05rem;">proptit_ai.crawled_books</div>
+        </div>
+        <div class="stat-metric-card">
+          <div class="title">Chỉ mục (Index) Đang Kích Hoạt</div>
+          <div class="value" style="font-size:1.05rem; color:#34d399;">{"url": 1} [UNIQUE B-TREE]</div>
+        </div>
+        <div class="stat-metric-card">
+          <div class="title">Thao tác Chèn mới (Inserted)</div>
+          <div class="value" id="statInsertedCount">0</div>
+        </div>
+        <div class="stat-metric-card">
+          <div class="title">Thao tác Cập nhật (Upserted/Updated)</div>
+          <div class="value" id="statUpdatedCount" style="color:var(--accent-amber);">0</div>
+        </div>
+      </div>
+
+      <div class="mongo-table-wrap">
+        <table class="styled-table" id="mongoTable">
+          <thead>
+            <tr>
+              <th>BSON ObjectId (_id)</th>
+              <th>Tiêu đề Sách (title)</th>
+              <th>Giá Bán (price - float)</th>
+              <th>Đánh Giá (rating)</th>
+              <th>Tồn Kho (in_stock)</th>
+              <th>Trạng Thái Upsert</th>
+              <th>URL Định Danh (Indexed Key)</th>
+            </tr>
+          </thead>
+          <tbody id="mongoTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center; color:var(--text-dim); padding:20px;">
+                Chưa có dữ liệu nào trong MongoDB. Bấm "Chạy tự động (Play)" hoặc "Bước tiếp (Step)" để bắt đầu crawl!
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Aggregation & Pandas AI Bridge -->
+    <div class="tab-content" id="tab-ai">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <h4 style="margin-bottom:8px; font-size:0.95rem; color:var(--accent-cyan);">
+            1. MongoDB Aggregation Pipeline Phân Tích Dữ Liệu
+          </h4>
+          <div class="code-box">pipeline = [
+    {"$match": {"in_stock": True}},  # Lọc sách còn hàng
+    {"$group": {                     # Nhóm theo rating và tính giá trung bình
+        "_id": "$rating",
+        "average_price": {"$avg": "$price"},
+        "total_books": {"$sum": 1}
+    }},
+    {"$sort": {"_id": -1}}           # Sắp xếp từ 5 sao xuống 1 sao
+]</div>
+          <div id="aggregationResult" style="margin-top:10px;">
+            <div style="color:var(--text-dim); font-size:0.8rem; font-style:italic;">
+              Chưa có dữ liệu để chạy Aggregation. Dữ liệu sẽ tự động tính toán khi crawl vào MongoDB.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin-bottom:8px; font-size:0.95rem; color:var(--accent-emerald);">
+            2. Cầu Nối MongoDB &rarr; Pandas DataFrame Phục Vụ Huấn Luyện AI
+          </h4>
+          <div class="code-box"># Trích xuất sang Pandas DataFrame sạch để nạp vào Feature Store / PyTorch / RAG
+cursor = collection.find({}, {"_id": 0})
+df = pd.DataFrame(list(cursor))
+print("DataFrame Shape:", df.shape)</div>
+          
+          <div class="mongo-table-wrap" style="margin-top:10px;">
+            <table class="styled-table" id="pandasTable">
+              <thead>
+                <tr>
+                  <th>Index</th>
+                  <th>title (object)</th>
+                  <th>price (float64)</th>
+                  <th>rating (int64)</th>
+                  <th>in_stock (bool)</th>
+                  <th>category (category)</th>
+                </tr>
+              </thead>
+              <tbody id="pandasTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-dim);">Chưa trích xuất DataFrame.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Comparison & Code -->
+    <div class="tab-content" id="tab-comparison">
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4>🟢 Option 1: Static Scraping (BS4)</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">
+            Dùng khi website là server-side rendering truyền thống, HTML trả về đã chứa trọn vẹn văn bản cần cào.
+          </p>
+          <div class="code-box">import requests
+from bs4 import BeautifulSoup
+
+res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+res.raise_for_status()
+soup = BeautifulSoup(res.text, "lxml")
+
+for card in soup.select("article.product_pod"):
+    title = card.select_one("h3 > a")["title"]
+    price = float(card.select_one(".price_color").text.replace("£", ""))</div>
+        </div>
+
+        <div class="compare-card">
+          <h4>🟠 Option 2: Dynamic Scraping (Playwright)</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">
+            Dùng khi website bắt buộc chạy JavaScript, ứng dụng SPA (React, Vue), cuộn trang vô hạn hoặc nút click.
+          </p>
+          <div class="code-box">from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
+    page.goto(url, wait_until="networkidle")
+    
+    # Cuộn trang vô hạn
+    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    page.wait_for_timeout(2000)
+    
+    items = page.locator("div.quote").all()
+    browser.close()</div>
+        </div>
+
+        <div class="compare-card">
+          <h4>⚡ Option 3: API Sniffing (XHR Reverse)</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">
+            Tuyệt chiêu tối thượng: Bỏ qua DOM, bắt trực tiếp Endpoint ngầm trả JSON thuần từ tab DevTools F12.
+          </p>
+          <div class="code-box">import requests
+
+# Bắt trực tiếp XHR API ngầm
+api_url = "https://api.domain.com/v1/products?page=1"
+headers = {
+    "User-Agent": "Mozilla/5.0...",
+    "Referer": "https://domain.com/"
+}
+res = requests.get(api_url, headers=headers)
+data = res.json() # Dữ liệu sẵn sàng kiểu Dict!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 5: Anti-bot Math Lab -->
+    <div class="tab-content" id="tab-math">
+      <div class="math-lab-box">
+        <h4 style="color:var(--accent-amber);">📐 1. Giải Thuật Exponential Backoff Chống Bị Chặn (Anti-Blocking)</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted);">
+          Khi gặp mã lỗi <b>HTTP 429 (Too Many Requests)</b> hoặc <b>503 (Service Unavailable)</b>, crawler không được gửi request lại dồn dập mà phải lùi lại theo hàm số mũ để bảo vệ hệ thống:
+        </p>
+
+        <div class="formula-display" id="backoffFormula">
+          $$\text{Wait Time} = t_{\text{base}} \times 2^{\text{attempt}} + \text{jitter}$$
+        </div>
+
+        <div class="math-calculator">
+          <div class="slider-container">
+            <label>Thời gian cơ sở \(t_{\text{base}}\):</label>
+            <input type="range" id="mathBase" min="0.5" max="3" step="0.5" value="1.0">
+            <span class="slider-val" id="mathBaseVal">1.0s</span>
+          </div>
+
+          <div class="slider-container">
+            <label>Số lần thử lại (\(\text{attempt}\)):</label>
+            <input type="range" id="mathAttempt" min="1" max="5" step="1" value="2">
+            <span class="slider-val" id="mathAttemptVal">2</span>
+          </div>
+
+          <div class="slider-container">
+            <label>Độ trễ ngẫu nhiên (\(\text{jitter}\)):</label>
+            <input type="range" id="mathJitter" min="0.0" max="1.5" step="0.1" value="0.4">
+            <span class="slider-val" id="mathJitterVal">0.4s</span>
+          </div>
+
+          <div style="margin-left:auto; font-size:0.9rem; font-family:var(--font-mono); font-weight:700; color:#34d399;">
+            &rArr; Thời gian chờ: <span id="mathResult">4.40 giây</span>
+          </div>
+        </div>
+
+        <hr style="border-color:var(--border-subtle); margin:10px 0;">
+
+        <h4 style="color:var(--accent-cyan);">🌲 2. Vì Sao Unique B-Tree Index Là Vũ Khí Tối Thượng Của MongoDB?</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted);">
+          Trong tác vụ cào định kỳ, mỗi bản ghi cào về cần kiểm tra xem đã tồn tại trong Database chưa:
+        </p>
+        <ul style="font-size:0.82rem; color:var(--text-muted); margin-left:20px; display:flex; flex-direction:column; gap:6px;">
+          <li>
+            <b>Không có Index (COLLSCAN - Collection Scan):</b> Duyệt tuần tự \(O(N)\) từ đầu đến cuối đĩa cứng. Với 1.000.000 bản ghi, mỗi lần kiểm tra mất ~25ms - 50ms &rarr; cào 10.000 trang mất hàng chục phút chỉ để tìm trùng!
+          </li>
+          <li>
+            <b>Có Unique Index trên `url` (IXSCAN - B-Tree Index):</b> Tìm kiếm theo cây nhị phân/B-Tree với độ phức tạp \(O(\log N)\). MongoDB tìm thấy trong dưới <b>0.5 mili-giây</b>, đồng thời ngăn chặn tuyệt đối lỗi race-condition duplicate dữ liệu.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   1. STATE / DATA MODEL
+   ========================================================================= */
+const state = {
+  theme: 'dark',
+  strategy: 'static', // 'static' | 'dynamic' | 'api'
+  isPlaying: false,
+  stepIndex: 0,
+  speed: 1.0,
+  politeDelay: 1.0,
+  simulateWaf: false,
+  pass2Mode: false,
+  backoffAttempt: 0,
+  
+  // Pipeline Nodes Coordinates & Config
+  nodes: [
+    { id: 'source', name: 'Target Web / API', sub: 'books.toscrape.com', x: 0.10, y: 0.50, color: '#0284c7', icon: '🌐' },
+    { id: 'engine', name: 'Crawling Engine', sub: 'requests + bs4', x: 0.32, y: 0.50, color: '#10b981', icon: '⚙️' },
+    { id: 'cleaner', name: 'Clean & Validate', sub: 'Typecast & Normalization', x: 0.54, y: 0.50, color: '#f59e0b', icon: '🧹' },
+    { id: 'mongo', name: 'MongoDB NoSQL', sub: 'Unique Index & Upsert', x: 0.74, y: 0.50, color: '#8b5cf6', icon: '🍃' },
+    { id: 'ai', name: 'AI Feature Bridge', sub: 'Pandas & Vector DB', x: 0.92, y: 0.50, color: '#ec4899', icon: '🤖' }
+  ],
+  
+  // Animated flowing packets
+  packets: [],
+  
+  // Sample book stream queue to crawl
+  itemQueue: [
+    {
+      id: 'book_1',
+      title: 'A Light in the Attic',
+      raw_price: '£51.77',
+      price: 51.77,
+      rating_str: 'Three',
+      rating: 3,
+      in_stock: true,
+      url: 'http://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html',
+      category: 'Poetry'
+    },
+    {
+      id: 'book_2',
+      title: 'Tipping the Velvet',
+      raw_price: '£53.74',
+      price: 53.74,
+      rating_str: 'One',
+      rating: 1,
+      in_stock: true,
+      url: 'http://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html',
+      category: 'Historical'
+    },
+    {
+      id: 'book_3',
+      title: 'Soumission',
+      raw_price: '£50.10',
+      price: 50.10,
+      rating_str: 'One',
+      rating: 1,
+      in_stock: false,
+      url: 'http://books.toscrape.com/catalogue/soumission_998/index.html',
+      category: 'Fiction'
+    },
+    {
+      id: 'book_4',
+      title: 'Sharp Objects',
+      raw_price: '£47.82',
+      price: 47.82,
+      rating_str: 'Four',
+      rating: 4,
+      in_stock: true,
+      url: 'http://books.toscrape.com/catalogue/sharp-objects_997/index.html',
+      category: 'Mystery'
+    },
+    {
+      id: 'book_5',
+      title: 'Sapiens: A Brief History',
+      raw_price: '£54.23',
+      price: 54.23,
+      rating_str: 'Five',
+      rating: 5,
+      in_stock: true,
+      url: 'http://books.toscrape.com/catalogue/sapiens_996/index.html',
+      category: 'History'
+    }
+  ],
+  
+  // Altered items for Pass 2 (Upsert test - price drop or stock change)
+  itemQueuePass2: [
+    {
+      id: 'book_1',
+      title: 'A Light in the Attic',
+      raw_price: '£45.99', // Giảm giá
+      price: 45.99,
+      rating_str: 'Three',
+      rating: 3,
+      in_stock: true,
+      url: 'http://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html',
+      category: 'Poetry'
+    },
+    {
+      id: 'book_3',
+      title: 'Soumission',
+      raw_price: '£48.00',
+      price: 48.00,
+      rating_str: 'One',
+      rating: 1,
+      in_stock: true, // Hàng về lại kho!
+      url: 'http://books.toscrape.com/catalogue/soumission_998/index.html',
+      category: 'Fiction'
+    }
+  ],
+  
+  // Current in-memory MongoDB Collection documents
+  collection: [],
+  insertedCount: 0,
+  updatedCount: 0,
+  
+  // Pipeline animation timers
+  lastFrameTime: performance.now(),
+  packetSpawnTimer: 0,
+  currentItemIdx: 0,
+  
+  // Math lab params
+  math: {
+    base: 1.0,
+    attempt: 2,
+    jitter: 0.4
+  }
+};
+
+/* =========================================================================
+   2. RENDER PIPELINE (CANVAS 2D & DOM)
+   ========================================================================= */
+const canvas = document.getElementById('pipelineCanvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('canvasContainer');
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = container.getBoundingClientRect();
+  
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
+  ctx.scale(dpr, dpr);
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function getThemeColors() {
+  const isDark = state.theme === 'dark';
+  return {
+    nodeBg: isDark ? '#1e293b' : '#ffffff',
+    nodeBorder: isDark ? '#475569' : '#cbd5e1',
+    nodeText: isDark ? '#f8fafc' : '#0f172a',
+    nodeSub: isDark ? '#94a3b8' : '#64748b',
+    pipeColor: isDark ? '#334155' : '#e2e8f0',
+    gridDot: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+  };
+}
+
+function renderCanvas() {
+  const rect = container.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
+  const theme = getThemeColors();
+
+  // 1. Clear background
+  ctx.clearRect(0, 0, width, height);
+
+  // Subtle background dot grid
+  const gridSize = 24;
+  ctx.fillStyle = theme.gridDot;
+  for (let x = gridSize; x < width; x += gridSize) {
+    for (let y = gridSize; y < height; y += gridSize) {
+      ctx.fillRect(x, y, 1.5, 1.5);
+    }
+  }
+
+  // Update dynamic subtitle on Engine node based on selected strategy
+  if (state.strategy === 'static') {
+    state.nodes[1].name = 'BS4 Static Engine';
+    state.nodes[1].sub = 'requests.get() + lxml DOM';
+    state.nodes[1].color = '#10b981';
+  } else if (state.strategy === 'dynamic') {
+    state.nodes[1].name = 'Playwright Engine';
+    state.nodes[1].sub = 'Headless Chromium + CDP';
+    state.nodes[1].color = '#f59e0b';
+  } else {
+    state.nodes[1].name = 'API Sniffing Engine';
+    state.nodes[1].sub = 'Direct XHR / JSON Intercept';
+    state.nodes[1].color = '#8b5cf6';
+  }
+
+  // 2. Draw Pipes (Edges between nodes)
+  for (let i = 0; i < state.nodes.length - 1; i++) {
+    const n1 = state.nodes[i];
+    const n2 = state.nodes[i + 1];
+    const x1 = n1.x * width;
+    const y1 = n1.y * height;
+    const x2 = n2.x * width;
+    const y2 = n2.y * height;
+
+    // Conduit Pipe
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = theme.pipeColor;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Pulse gradient line
+    const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+    grad.addColorStop(0, n1.color);
+    grad.addColorStop(1, n2.color);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = grad;
+    ctx.stroke();
+
+    // Arrow indicator
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    ctx.fillStyle = n2.color;
+    ctx.beginPath();
+    ctx.moveTo(midX - 4, midY - 5);
+    ctx.lineTo(midX + 4, midY);
+    ctx.lineTo(midX - 4, midY + 5);
+    ctx.fill();
+  }
+
+  // 3. Draw Nodes
+  state.nodes.forEach((node) => {
+    const nx = node.x * width;
+    const ny = node.y * height;
+    const boxW = Math.min(145, width * 0.17);
+    const boxH = 68;
+
+    // Outer Glow if active
+    ctx.save();
+    ctx.shadowColor = node.color;
+    ctx.shadowBlur = 12;
+    ctx.strokeStyle = node.color;
+    ctx.lineWidth = 2;
+
+    // Rounded rectangle card
+    ctx.fillStyle = theme.nodeBg;
+    drawRoundedRect(ctx, nx - boxW / 2, ny - boxH / 2, boxW, boxH, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Node icon & text
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(node.icon, nx, ny - 16);
+
+    ctx.fillStyle = theme.nodeText;
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText(node.name, nx, ny + 4);
+
+    ctx.fillStyle = theme.nodeSub;
+    ctx.font = '9px ui-monospace, monospace';
+    ctx.fillText(node.sub, nx, ny + 18);
+  });
+
+  // 4. Draw Animated Packets
+  state.packets.forEach(pkt => {
+    const fromNode = state.nodes[pkt.fromIdx];
+    const toNode = state.nodes[pkt.toIdx];
+    const x1 = fromNode.x * width;
+    const y1 = fromNode.y * height;
+    const x2 = toNode.x * width;
+    const y2 = toNode.y * height;
+
+    const curX = x1 + (x2 - x1) * pkt.progress;
+    const curY = y1 + (y2 - y1) * pkt.progress;
+
+    // Glow ball
+    ctx.save();
+    ctx.shadowColor = pkt.color;
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = pkt.color;
+    ctx.beginPath();
+    ctx.arc(curX, curY, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Packet Label
+    ctx.font = 'bold 9px ui-monospace, monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.fillText(pkt.label, curX, curY - 12);
+  });
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+/* =========================================================================
+   SIMULATION ENGINE (LOGIC & STEPPING)
+   ========================================================================= */
+
+function logTerminal(message, type = 'info') {
+  const terminal = document.getElementById('terminalLog');
+  const now = new Date();
+  const timeStr = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+  
+  const line = document.createElement('div');
+  line.className = 'terminal-line';
+  
+  let typeClass = 'log-info';
+  if (type === 'success') typeClass = 'log-success';
+  if (type === 'warn') typeClass = 'log-warn';
+  if (type === 'error') typeClass = 'log-error';
+  if (type === 'db') typeClass = 'log-db';
+  
+  line.innerHTML = `<span class="terminal-time">${timeStr}</span><span class="${typeClass}">${message}</span>`;
+  terminal.appendChild(line);
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function updateMongoTable() {
+  const tbody = document.getElementById('mongoTableBody');
+  const docCountBadge = document.getElementById('docCountBadge');
+  const statInserted = document.getElementById('statInsertedCount');
+  const statUpdated = document.getElementById('statUpdatedCount');
+
+  docCountBadge.innerText = state.collection.length;
+  statInserted.innerText = state.insertedCount;
+  statUpdated.innerText = state.updatedCount;
+
+  if (state.collection.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:20px;">Chưa có dữ liệu nào trong MongoDB.</td></tr>`;
+    return;
+  }
+
+  let html = '';
+  state.collection.forEach(doc => {
+    const isUpdated = doc.isUpdated;
+    const pillClass = isUpdated ? 'pill-update' : 'pill-insert';
+    const pillText = isUpdated ? '[UPDATED]' : '[INSERTED]';
+    const priceColor = isUpdated ? 'color:#fbbf24; font-weight:700;' : 'color:#34d399;';
+
+    html += `<tr>
+      <td style="color:#a78bfa;">ObjectId("${doc._id}")</td>
+      <td style="font-weight:600; color:var(--text-main);">${doc.title}</td>
+      <td style="${priceColor}">£${doc.price.toFixed(2)}</td>
+      <td>${'★'.repeat(doc.rating)}${'☆'.repeat(5 - doc.rating)} (${doc.rating}/5)</td>
+      <td>${doc.in_stock ? '<span style="color:#34d399;">Còn hàng</span>' : '<span style="color:#f43f5e;">Hết hàng</span>'}</td>
+      <td><span class="badge-pill ${pillClass}">${pillText}</span></td>
+      <td style="color:var(--text-dim); max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${doc.url}">${doc.url}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+
+  updateAggregationAndPandas();
+}
+
+function updateAggregationAndPandas() {
+  const aggResultDiv = document.getElementById('aggregationResult');
+  const pandasBody = document.getElementById('pandasTableBody');
+
+  if (state.collection.length === 0) {
+    aggResultDiv.innerHTML = `<div style="color:var(--text-dim); font-size:0.8rem; font-style:italic;">Chưa có dữ liệu để chạy Aggregation.</div>`;
+    pandasBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dim);">Chưa trích xuất DataFrame.</td></tr>`;
+    return;
+  }
+
+  // 1. Calculate MongoDB Aggregation: $match { in_stock: true } -> $group by rating -> $sort
+  const inStockDocs = state.collection.filter(d => d.in_stock);
+  const ratingGroups = {};
+
+  inStockDocs.forEach(d => {
+    if (!ratingGroups[d.rating]) {
+      ratingGroups[d.rating] = { total: 0, count: 0, min: d.price, max: d.price };
+    }
+    ratingGroups[d.rating].total += d.price;
+    ratingGroups[d.rating].count += 1;
+    ratingGroups[d.rating].min = Math.min(ratingGroups[d.rating].min, d.price);
+    ratingGroups[d.rating].max = Math.max(ratingGroups[d.rating].max, d.price);
+  });
+
+  const sortedRatings = Object.keys(ratingGroups).map(Number).sort((a, b) => b - a);
+
+  let aggHtml = `<div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">`;
+  sortedRatings.forEach(r => {
+    const grp = ratingGroups[r];
+    const avg = grp.total / grp.count;
+    aggHtml += `
+      <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 12px; font-size:0.75rem; font-family:var(--font-mono);">
+        <span style="color:#fbbf24;">${r} Sao ★</span>: <b>${grp.count} cuốn</b> | TB: <b style="color:#38bdf8;">£${avg.toFixed(2)}</b> [${grp.min} - ${grp.max}]
+      </div>
+    `;
+  });
+  aggHtml += `</div>`;
+  aggResultDiv.innerHTML = aggHtml;
+
+  // 2. Render Pandas DataFrame head
+  let dfRows = '';
+  state.collection.forEach((d, idx) => {
+    dfRows += `<tr>
+      <td>${idx}</td>
+      <td style="color:var(--text-main); font-weight:600;">${d.title}</td>
+      <td style="color:#34d399;">${d.price.toFixed(2)}</td>
+      <td>${d.rating}</td>
+      <td>${d.in_stock ? 'True' : 'False'}</td>
+      <td style="color:#a78bfa;">${d.category || 'General'}</td>
+    </tr>`;
+  });
+  pandasBody.innerHTML = dfRows;
+}
+
+// Single step execution of crawling
+function executeNextStep() {
+  const queue = state.pass2Mode ? state.itemQueuePass2 : state.itemQueue;
+  if (state.currentItemIdx >= queue.length) {
+    if (state.pass2Mode) {
+      logTerminal("[✓] Đã hoàn thành toàn bộ lượt cào Lần 2 (Upsert Demo)! Kiểm tra bảng MongoDB để thấy các bản ghi được cập nhật không bị trùng lặp.", "success");
+    } else {
+      logTerminal("[✓] Đã thu thập hoàn tất hàng đợi hiện tại! Bật 'Lần Cào 2 (Test Upsert)' để kiểm chứng cập nhật dữ liệu.", "success");
+    }
+    state.isPlaying = false;
+    updatePlayButton();
+    return;
+  }
+
+  const currentItem = queue[state.currentItemIdx];
+
+  // Check if WAF Rate Limit is toggled ON
+  if (state.simulateWaf && state.backoffAttempt === 0) {
+    state.backoffAttempt++;
+    logTerminal(`[!] HTTP 429 Too Many Requests từ máy chủ đối với: ${currentItem.url}`, "error");
+    
+    // Calculate exponential backoff
+    const tBase = state.math.base;
+    const jitter = state.math.jitter;
+    const waitTime = (tBase * Math.pow(2, state.backoffAttempt) + jitter).toFixed(2);
+    
+    logTerminal(`[🛡️ Anti-bot WAF] Kích hoạt Exponential Backoff: Wait Time = ${tBase}s * 2^${state.backoffAttempt} + ${jitter}s = ${waitTime}s... Chờ thử lại!`, "warn");
+    
+    // Spawn backoff warning packet
+    state.packets.push({
+      fromIdx: 0,
+      toIdx: 1,
+      progress: 0,
+      speed: 0.008 * state.speed,
+      color: '#f43f5e',
+      label: '429 BACKOFF',
+      onComplete: () => {
+        logTerminal(`[✓] Đã qua thời gian chờ backoff (${waitTime}s). Gửi lại request với Fake User-Agent...`, "info");
+        state.backoffAttempt = 0; // Reset backoff for this item
+      }
+    });
+    return;
+  }
+
+  // 1. Dispatch Request from Target Web
+  logTerminal(`[*] [${state.strategy.toUpperCase()}] Đang gửi request tới: ${currentItem.url}`);
+  
+  // Create Packet: Target -> Engine
+  state.packets.push({
+    fromIdx: 0,
+    toIdx: 1,
+    progress: 0,
+    speed: 0.012 * state.speed,
+    color: '#38bdf8',
+    label: state.strategy === 'api' ? 'GET XHR JSON' : 'GET HTML',
+    onComplete: () => {
+      // Packet reached Engine
+      if (state.strategy === 'static') {
+        logTerminal(`[+] [BS4] Nhận 200 OK HTML. Phân tích DOM với BeautifulSoup('lxml'). Selector: article.product_pod`, "info");
+      } else if (state.strategy === 'dynamic') {
+        logTerminal(`[+] [Playwright] Khởi chạy Chromium Context, evaluate('window.scrollTo(...)'), auto-wait selectors.`, "info");
+      } else {
+        logTerminal(`[+] [API Sniffing] Bắt trực tiếp XHR response. Decode JSON payload không cần qua DOM!`, "success");
+      }
+
+      // Create Packet: Engine -> Cleaner
+      state.packets.push({
+        fromIdx: 1,
+        toIdx: 2,
+        progress: 0,
+        speed: 0.015 * state.speed,
+        color: '#f59e0b',
+        label: 'RAW DATA',
+        onComplete: () => {
+          // Packet reached Cleaner
+          logTerminal(`[+] [Cleaning] Ép kiểu: "${currentItem.raw_price}" &rarr; ${currentItem.price} (float), "${currentItem.rating_str}" &rarr; ${currentItem.rating} (int)`, "info");
+
+          // Create Packet: Cleaner -> MongoDB
+          state.packets.push({
+            fromIdx: 2,
+            toIdx: 3,
+            progress: 0,
+            speed: 0.015 * state.speed,
+            color: '#a78bfa',
+            label: 'UPSERT',
+            onComplete: () => {
+              // Execute Upsert in MongoDB
+              executeMongoUpsert(currentItem);
+
+              // Create Packet: MongoDB -> AI Bridge
+              state.packets.push({
+                fromIdx: 3,
+                toIdx: 4,
+                progress: 0,
+                speed: 0.015 * state.speed,
+                color: '#ec4899',
+                label: 'AI DATAFRAME',
+                onComplete: () => {
+                  logTerminal(`[🤖 AI Bridge] Document sẵn sàng trong Pandas DataFrame cho ML Training / RAG!`, "success");
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+
+  state.currentItemIdx++;
+}
+
+// Realistic MongoDB Upsert logic
+function executeMongoUpsert(item) {
+  // Check index on URL
+  const existingIndex = state.collection.findIndex(d => d.url === item.url);
+
+  if (existingIndex >= 0) {
+    // URL found -> UPDATE (Upsert update match)
+    const existingDoc = state.collection[existingIndex];
+    existingDoc.price = item.price;
+    existingDoc.in_stock = item.in_stock;
+    existingDoc.isUpdated = true;
+    existingDoc.updated_at = Date.now();
+    state.updatedCount++;
+
+    logTerminal(`[🍃 MongoDB Upsert] Tìm thấy URL trùng (Index hit): Đã CẬP NHẬT bản ghi "${item.title}" với giá mới £${item.price.toFixed(2)} (Không sinh duplicate!)`, "warn");
+  } else {
+    // URL not found -> INSERT NEW
+    const pseudoObjectId = Math.random().toString(16).substring(2, 10) + Math.random().toString(16).substring(2, 10) + Math.random().toString(16).substring(2, 10);
+    const newDoc = {
+      _id: pseudoObjectId.substring(0, 24),
+      title: item.title,
+      price: item.price,
+      rating: item.rating,
+      in_stock: item.in_stock,
+      url: item.url,
+      category: item.category,
+      isUpdated: false,
+      created_at: Date.now()
+    };
+    state.collection.push(newDoc);
+    state.insertedCount++;
+
+    logTerminal(`[🍃 MongoDB Insert] URL mới hợp lệ: Đã CHÈN bản ghi mới _id: ObjectId("${newDoc._id}") vào collection!`, "db");
+  }
+
+  updateMongoTable();
+}
+
+/* =========================================================================
+   ANIMATION TICK LOOP (requestAnimationFrame)
+   ========================================================================= */
+let lastPacketSpawn = 0;
+
+function tick(currentTime) {
+  const dt = currentTime - state.lastFrameTime;
+  state.lastFrameTime = currentTime;
+
+  // Animate Packets
+  for (let i = state.packets.length - 1; i >= 0; i--) {
+    const pkt = state.packets[i];
+    pkt.progress += pkt.speed * (dt / 16.66);
+
+    if (pkt.progress >= 1.0) {
+      if (pkt.onComplete) pkt.onComplete();
+      state.packets.splice(i, 1);
+    }
+  }
+
+  // If playing, spawn new step periodically
+  if (state.isPlaying) {
+    if (currentTime - lastPacketSpawn > (state.politeDelay * 2200) / state.speed) {
+      executeNextStep();
+      lastPacketSpawn = currentTime;
+    }
+  }
+
+  renderCanvas();
+  requestAnimationFrame(tick);
+}
+
+requestAnimationFrame(tick);
+
+/* =========================================================================
+   3. CONTROLS & EVENT LISTENERS
+   ========================================================================= */
+const playPauseBtn = document.getElementById('playPauseBtn');
+const stepBtn = document.getElementById('stepBtn');
+const resetBtn = document.getElementById('resetBtn');
+const speedSlider = document.getElementById('speedSlider');
+const speedVal = document.getElementById('speedVal');
+const delaySlider = document.getElementById('delaySlider');
+const delayVal = document.getElementById('delayVal');
+const wafToggle = document.getElementById('wafToggle');
+const upsertToggle = document.getElementById('upsertToggle');
+const clearLogBtn = document.getElementById('clearLogBtn');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const guideBtn = document.getElementById('guideBtn');
+
+function updatePlayButton() {
+  if (state.isPlaying) {
+    playPauseBtn.innerText = '⏸ Tạm dừng (Pause)';
+    playPauseBtn.className = 'danger';
+  } else {
+    playPauseBtn.innerText = '▶ Chạy tự động (Play)';
+    playPauseBtn.className = 'primary';
+  }
+}
+
+playPauseBtn.addEventListener('click', () => {
+  state.isPlaying = !state.isPlaying;
+  updatePlayButton();
+  if (state.isPlaying && state.packets.length === 0) {
+    executeNextStep();
+    lastPacketSpawn = performance.now();
+  }
+});
+
+stepBtn.addEventListener('click', () => {
+  state.isPlaying = false;
+  updatePlayButton();
+  executeNextStep();
+});
+
+resetBtn.addEventListener('click', () => {
+  state.isPlaying = false;
+  updatePlayButton();
+  state.packets = [];
+  state.collection = [];
+  state.insertedCount = 0;
+  state.updatedCount = 0;
+  state.currentItemIdx = 0;
+  state.backoffAttempt = 0;
+  updateMongoTable();
+  logTerminal('[*] Đã dọn dẹp Database và reset toàn bộ Pipeline về trạng thái ban đầu.', 'warn');
+});
+
+speedSlider.addEventListener('input', (e) => {
+  state.speed = parseFloat(e.target.value);
+  speedVal.innerText = state.speed.toFixed(1) + 'x';
+});
+
+delaySlider.addEventListener('input', (e) => {
+  state.politeDelay = parseFloat(e.target.value);
+  delayVal.innerText = state.politeDelay.toFixed(1) + 's';
+});
+
+wafToggle.addEventListener('click', () => {
+  state.simulateWaf = !state.simulateWaf;
+  wafToggle.classList.toggle('active', state.simulateWaf);
+  logTerminal(state.simulateWaf ? 
+    '[🛡️ Chế độ Anti-bot 429] Đã BẬT: Máy chủ sẽ mô phỏng mã lỗi 429 để kiểm chứng Exponential Backoff.' : 
+    '[*] Chế độ Anti-bot đã TẮT: Máy chủ phản hồi 200 OK bình thường.',
+    state.simulateWaf ? 'warn' : 'info'
+  );
+});
+
+upsertToggle.addEventListener('click', () => {
+  state.pass2Mode = !state.pass2Mode;
+  upsertToggle.classList.toggle('active', state.pass2Mode);
+  state.currentItemIdx = 0;
+  logTerminal(state.pass2Mode ? 
+    '[🔄 Chế độ Lần Cào 2] Đã BẬT: Hàng đợi nạp các cuốn sách cũ với giá giảm (A Light in the Attic: £51.77 &rarr; £45.99) để kiểm chứng Upsert cập nhật dữ liệu!' :
+    '[*] Chế độ Lần Cào 1: Hàng đợi cào danh sách mới ban đầu.',
+    state.pass2Mode ? 'warn' : 'info'
+  );
+});
+
+clearLogBtn.addEventListener('click', () => {
+  document.getElementById('terminalLog').innerHTML = '';
+});
+
+// Strategy selector cards
+const strategyCards = document.querySelectorAll('.strategy-card');
+strategyCards.forEach(card => {
+  card.addEventListener('click', () => {
+    strategyCards.forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    state.strategy = card.getAttribute('data-strategy');
+    logTerminal(`[*] Đã chuyển chiến lược cào sang: ${card.querySelector('.strategy-title').innerText.trim()}`, 'info');
+  });
+});
+
+// Tab switching
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.getAttribute('data-tab');
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+
+// Theme toggle
+themeToggleBtn.addEventListener('click', () => {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  logTerminal(`[*] Đã đổi theme giao diện sang: ${state.theme.toUpperCase()}`, 'info');
+});
+
+// Guide dialog
+guideBtn.addEventListener('click', () => {
+  alert(
+    "HƯỚNG DẪN SỬ DỤNG MÔ PHỎNG DATA CRAWLING & MONGODB:\n\n" +
+    "1. CHỌN CHIẾN LƯỢC: Chọn 1 trong 3 Option (Static bs4, Dynamic Playwright, API Sniffing).\n" +
+    "2. CHẠY MÔ PHỎNG: Bấm 'Chạy tự động (Play)' hoặc 'Bước tiếp (Step)' để xem từng gói tin chuyển động.\n" +
+    "3. QUAN SÁT MONGODB & UPSERT: Mở tab 'MongoDB Live Collection'. Bật nút 'Lần Cào 2 (Test Upsert)' rồi bấm Play để thấy cơ chế Upsert cập nhật giá mà không nhân bản dữ liệu!\n" +
+    "4. KIỂM THỬ ANTI-BOT 429: Bật nút 'Chặn 429 (Backoff)' để thấy công thức Exponential Backoff hoạt động khi gặp WAF.\n" +
+    "5. CẦU NỐI AI: Xem tab 'Aggregation & Pandas AI Bridge' để thấy dữ liệu biến thành DataFrame sẵn sàng nạp vào mô hình AI."
+  );
+});
+
+// Math Lab Sliders
+const mathBase = document.getElementById('mathBase');
+const mathAttempt = document.getElementById('mathAttempt');
+const mathJitter = document.getElementById('mathJitter');
+const mathBaseVal = document.getElementById('mathBaseVal');
+const mathAttemptVal = document.getElementById('mathAttemptVal');
+const mathJitterVal = document.getElementById('mathJitterVal');
+const mathResult = document.getElementById('mathResult');
+
+function updateMathLab() {
+  const b = parseFloat(mathBase.value);
+  const a = parseInt(mathAttempt.value);
+  const j = parseFloat(mathJitter.value);
+
+  mathBaseVal.innerText = b.toFixed(1) + 's';
+  mathAttemptVal.innerText = a;
+  mathJitterVal.innerText = j.toFixed(1) + 's';
+
+  const total = b * Math.pow(2, a) + j;
+  mathResult.innerText = `${total.toFixed(2)} giây`;
+}
+
+[mathBase, mathAttempt, mathJitter].forEach(inp => {
+  inp.addEventListener('input', updateMathLab);
+});
+
+// Render KaTeX once scripts load
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ]
+    });
+  }
+});
+</script>
+</body>
+</html>
